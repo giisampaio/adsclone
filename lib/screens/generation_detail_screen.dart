@@ -10,6 +10,7 @@ import 'package:adscloneia/widgets/constrained_page.dart';
 import 'package:adscloneia/widgets/status_badge.dart';
 import 'package:archive/archive.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
@@ -107,7 +108,8 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
     }
   }
 
-  Future<void> _downloadAllCompleted() async {
+  /// Baixa todas as variações concluídas como um único ZIP (não abre URLs no navegador).
+  Future<void> _downloadAllVariationsAsZip() async {
     final completed = _variants
         .where((v) =>
             v.imageUrl.isNotEmpty &&
@@ -123,6 +125,10 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
       return;
     }
     if (_preparingAllDownload) return;
+    // ignore: avoid_print
+    print(
+      'Iniciando download ZIP de ${completed.length} variações (kIsWeb=$kIsWeb)',
+    );
     setState(() => _preparingAllDownload = true);
     try {
       final archive = Archive();
@@ -258,7 +264,8 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
           Tooltip(
             message: 'Baixar todas as variações',
             child: TextButton.icon(
-              onPressed: _preparingAllDownload ? null : _downloadAllCompleted,
+              onPressed:
+                  _preparingAllDownload ? null : _downloadAllVariationsAsZip,
               icon: _preparingAllDownload
                   ? SizedBox(
                       width: 20,
