@@ -104,8 +104,8 @@ class _AuthFlowShellState extends State<_AuthFlowShell> {
   }
 }
 
-/// Largura mínima (web) para menu lateral em vez da barra inferior.
-const double kWebSidebarBreakpoint = 840;
+/// Largura mínima (web) para menu lateral em vez da barra inferior (tablet/desktop).
+const double kWebSidebarBreakpoint = 600;
 
 bool useWebSidebarLayout(BuildContext context) {
   if (!kIsWeb) return false;

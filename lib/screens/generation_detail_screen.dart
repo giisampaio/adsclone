@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:adscloneia/models/generation.dart';
 import 'package:adscloneia/models/variant.dart';
 import 'package:adscloneia/services/generation_service.dart';
 import 'package:adscloneia/theme/app_palette.dart';
+import 'package:adscloneia/widgets/app_empty_state.dart';
 import 'package:adscloneia/widgets/constrained_page.dart';
 import 'package:adscloneia/widgets/status_badge.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -210,8 +213,8 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
   }
 
   int _gridColumns(double width) {
-    if (width <= 600) return 1;
-    if (width <= 900) return 2;
+    if (width < 600) return 1;
+    if (width <= 1024) return 2;
     return 3;
   }
 
@@ -226,14 +229,17 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
           style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
         ),
         actions: [
-          TextButton.icon(
-            onPressed: _downloadAllCompleted,
-            icon: Icon(Icons.download_rounded, size: 20, color: p.secondary),
-            label: Text(
-              'Baixar todas',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w600,
-                color: p.secondary,
+          Tooltip(
+            message: 'Baixar todas as variações',
+            child: TextButton.icon(
+              onPressed: _downloadAllCompleted,
+              icon: Icon(Icons.download_rounded, size: 20, color: p.secondary),
+              label: Text(
+                'Baixar todas',
+                style: GoogleFonts.dmSans(
+                  fontWeight: FontWeight.w600,
+                  color: p.secondary,
+                ),
               ),
             ),
           ),
@@ -245,7 +251,7 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
         ],
       ),
       body: MaxWidthBox(
-        maxWidth: 1200,
+        maxWidth: 1400,
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
@@ -337,19 +343,12 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
                 ),
               ),
             if (!_loading && _variants.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                    child: Text(
-                      'Aguardando variações…\nElas aparecem aqui em tempo real.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(
-                        color: p.muted,
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: AppEmptyState(
+                  icon: Icons.grid_on_outlined,
+                  title: 'Nenhuma variação gerada',
+                  subtitle: 'Aguardando processamento...',
                 ),
               ),
           ],
@@ -367,29 +366,40 @@ class _OriginalPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.p;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 300, maxHeight: 300),
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            placeholder: (context, u) => Shimmer.fromColors(
-              baseColor: p.surface,
-              highlightColor: p.muted.withValues(alpha: 0.25),
-              child: Container(color: p.surface),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = MediaQuery.sizeOf(context).width < 600;
+        final maxW = narrow
+            ? constraints.maxWidth
+            : math.min(400.0, constraints.maxWidth);
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: maxW,
+              maxHeight: 400,
             ),
-            errorWidget: (context, u, e) => Container(
-              color: p.surface,
-              alignment: Alignment.center,
-              child: Icon(Icons.image_not_supported_outlined,
-                  color: p.muted, size: 40),
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                placeholder: (context, u) => Shimmer.fromColors(
+                  baseColor: p.surface,
+                  highlightColor: p.muted.withValues(alpha: 0.25),
+                  child: Container(color: p.surface),
+                ),
+                errorWidget: (context, u, e) => Container(
+                  color: p.surface,
+                  alignment: Alignment.center,
+                  child: Icon(Icons.image_not_supported_outlined,
+                      color: p.muted, size: 40),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -477,7 +487,7 @@ class _ProjectInfoPanel extends StatelessWidget {
   }
 }
 
-class _VariationCard extends StatelessWidget {
+class _VariationCard extends StatefulWidget {
   const _VariationCard({
     required this.variant,
     required this.onDownload,
@@ -488,94 +498,162 @@ class _VariationCard extends StatelessWidget {
   final VoidCallback onDownload;
   final VoidCallback onDiscard;
 
+  @override
+  State<_VariationCard> createState() => _VariationCardState();
+}
+
+class _VariationCardState extends State<_VariationCard> {
+  bool _hover = false;
+
   bool get _hasImage =>
-      variant.imageUrl.isNotEmpty &&
-      (variant.status.toLowerCase() == 'complete' ||
-          variant.status.toLowerCase() == 'completed');
+      widget.variant.imageUrl.isNotEmpty &&
+      (widget.variant.status.toLowerCase() == 'complete' ||
+          widget.variant.status.toLowerCase() == 'completed');
 
   bool get _isGenerating {
-    final s = variant.status.toLowerCase();
+    final s = widget.variant.status.toLowerCase();
     return (s == 'processing' || s == 'pending' || s == 'generating') &&
-        variant.imageUrl.isEmpty;
+        widget.variant.imageUrl.isEmpty;
   }
 
   @override
   Widget build(BuildContext context) {
     final p = context.p;
-    final direction = (variant.direction != null && variant.direction!.isNotEmpty)
-        ? variant.direction!
+    final v = widget.variant;
+    final direction = (v.direction != null && v.direction!.isNotEmpty)
+        ? v.direction!
         : 'Variação';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: p.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: p.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: _buildThumb(context, p),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: AnimatedScale(
+        scale: _hover ? 1.01 : 1.0,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: p.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _hover
+                  ? p.accent.withValues(alpha: 0.45)
+                  : p.border,
+              width: 1,
             ),
+            boxShadow: _hover
+                ? [
+                    BoxShadow(
+                      color: p.accent.withValues(alpha: 0.14),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  direction,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: p.text,
-                    height: 1.25,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AspectRatio(
+                aspectRatio: 1,
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: _buildThumb(context, p),
                 ),
-                const SizedBox(height: 8),
-                StatusBadge(status: variant.status),
-                const SizedBox(height: 12),
-                Row(
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _hasImage ? onDownload : null,
-                        icon: const Icon(Icons.download_rounded, size: 18),
-                        label: const Text('Baixar'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: p.secondary,
-                          side: BorderSide(color: p.secondary),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
+                    Text(
+                      direction,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: p.text,
+                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: 'Descartar',
-                      onPressed: onDiscard,
-                      icon: const Icon(Icons.delete_outline_rounded),
-                      color: p.tertiary,
+                    const SizedBox(height: 8),
+                    StatusBadge(status: v.status),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Tooltip(
+                            message: 'Baixar imagem',
+                            child: OutlinedButton.icon(
+                              onPressed: _hasImage ? widget.onDownload : null,
+                              icon: const Icon(Icons.download_rounded, size: 18),
+                              label: const Text('Baixar'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: p.secondary,
+                                side: BorderSide(color: p.secondary),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                              ).copyWith(
+                                backgroundColor:
+                                    WidgetStateProperty.resolveWith((states) {
+                                  if (states.contains(WidgetState.hovered)) {
+                                    return p.secondary.withValues(alpha: 0.08);
+                                  }
+                                  return Colors.transparent;
+                                }),
+                                elevation: WidgetStateProperty.resolveWith(
+                                    (states) {
+                                  if (states.contains(WidgetState.hovered)) {
+                                    return 2;
+                                  }
+                                  return 0;
+                                }),
+                                shadowColor: WidgetStateProperty.all(
+                                  p.secondary.withValues(alpha: 0.25),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          tooltip: 'Descartar',
+                          onPressed: widget.onDiscard,
+                          icon: const Icon(Icons.delete_outline_rounded),
+                          color: p.tertiary,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildThumb(BuildContext context, AppPalette p) {
+    final variant = widget.variant;
     if (_hasImage) {
       return CachedNetworkImage(
-        imageUrl: variant.imageUrl,
+        imageUrl: widget.variant.imageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => Shimmer.fromColors(
           baseColor: p.surface,

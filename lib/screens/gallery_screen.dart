@@ -1,8 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:adscloneia/models/generation.dart';
 import 'package:adscloneia/screens/generation_detail_screen.dart';
 import 'package:adscloneia/services/generation_service.dart';
 import 'package:adscloneia/theme/app_palette.dart';
+import 'package:adscloneia/utils/project_card_helpers.dart';
+import 'package:adscloneia/widgets/app_empty_state.dart';
 import 'package:adscloneia/widgets/constrained_page.dart';
+import 'package:adscloneia/widgets/hover_card.dart';
 import 'package:adscloneia/widgets/status_badge.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -126,6 +131,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
     if (deleted == true && mounted) await _refresh();
   }
 
+  static int _cols(double width) {
+    if (width >= 1024) return 3;
+    if (width >= 600) return 2;
+    return 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = context.p;
@@ -161,13 +172,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 children: [
                   MaxWidthBox(
-                    maxWidth: 900,
+                    maxWidth: 1100,
+                    paddingMode: MaxWidthPaddingMode.gallery,
                     child: Column(
                       children: [
                         _ShimmerTile(palette: px),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 16),
                         _ShimmerTile(palette: px),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 16),
                         _ShimmerTile(palette: px),
                       ],
                     ),
@@ -195,87 +207,32 @@ class _GalleryScreenState extends State<GalleryScreen> {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
+                  SizedBox(height: MediaQuery.sizeOf(context).height * 0.08),
                   MaxWidthBox(
                     maxWidth: 900,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: px.surface,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: px.border,
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.folder_open_rounded,
-                            size: 56,
-                            color: px.muted.withValues(alpha: 0.6),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Nenhum projeto ainda',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: px.text,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Crie variações a partir de um criativo na aba Criar.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.dmSans(
-                            color: px.muted,
-                            height: 1.45,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        FilledButton(
-                          onPressed: widget.onNavigateToCreate ?? () {},
-                          style: FilledButton.styleFrom(
-                            backgroundColor: px.accent,
-                            foregroundColor: px.onAccent,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 28,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: Text(
-                            'Criar primeiro',
-                            style: GoogleFonts.dmSans(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ],
+                    paddingMode: MaxWidthPaddingMode.gallery,
+                    child: AppEmptyState(
+                      icon: Icons.collections_outlined,
+                      title: 'Sua galeria está vazia',
+                      subtitle:
+                          'Os projetos concluídos aparecerão aqui',
+                      actionLabel: 'Criar projeto',
+                      onAction: widget.onNavigateToCreate ?? () {},
                     ),
                   ),
                 ],
               );
             }
 
-            return ListView.builder(
+            return CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(0, 20, 0, 40),
-              itemCount: items.length + 1,
-              itemBuilder: (context, i) {
-                if (i == 0) {
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 0, right: 0, bottom: 8),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 12),
                     child: MaxWidthBox(
-                      maxWidth: 900,
+                      maxWidth: 1100,
+                      paddingMode: MaxWidthPaddingMode.gallery,
                       child: Text(
                         'Projetos',
                         style: GoogleFonts.dmSans(
@@ -285,23 +242,48 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         ),
                       ),
                     ),
-                  );
-                }
-                final g = items[i - 1];
-                final previews = data.previewUrls[g.id] ?? [];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: MaxWidthBox(
-                    maxWidth: 900,
-                    child: _ProjectCard(
-                      generation: g,
-                      previewUrls: previews,
-                      onOpen: () => _openDetail(g),
-                      onDelete: () => _confirmDeleteProject(context, g),
-                    ),
                   ),
-                );
-              },
+                ),
+                SliverLayoutBuilder(
+                  builder: (context, constraints) {
+                    final cols = _cols(constraints.crossAxisExtent);
+                    return SliverPadding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      sliver: SliverToBoxAdapter(
+                        child: MaxWidthBox(
+                          maxWidth: 1100,
+                          paddingMode: MaxWidthPaddingMode.gallery,
+                          child: LayoutBuilder(
+                            builder: (context, c2) {
+                              final w = c2.maxWidth;
+                              final colW =
+                                  (w - (cols - 1) * 16) / math.max(1, cols);
+                              return Wrap(
+                                spacing: 16,
+                                runSpacing: 16,
+                                children: [
+                                  for (final g in items)
+                                    SizedBox(
+                                      width: colW,
+                                      child: _ProjectCard(
+                                        generation: g,
+                                        previewUrls:
+                                            data.previewUrls[g.id] ?? [],
+                                        onOpen: () => _openDetail(g),
+                                        onDelete: () =>
+                                            _confirmDeleteProject(context, g),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             );
           },
         ),
@@ -323,28 +305,21 @@ class _ProjectCard extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onDelete;
 
-  static String _formatDate(DateTime d) {
-    final local = d.toLocal();
-    return '${local.day.toString().padLeft(2, '0')}/'
-        '${local.month.toString().padLeft(2, '0')}/'
-        '${local.year} · '
-        '${local.hour.toString().padLeft(2, '0')}:'
-        '${local.minute.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = context.p;
-    return Material(
-      color: p.surface,
-      borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias,
+    final brief = generationCreativeBrief(generation.analysis);
+    final rel = formatRelativeTimePt(generation.createdAt);
+
+    return HoverScaleCard(
+      borderRadius: 16,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: InkWell(
               onTap: onOpen,
+              hoverColor: p.accent.withValues(alpha: 0.04),
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Row(
@@ -353,8 +328,8 @@ class _ProjectCard extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
-                        width: 80,
-                        height: 80,
+                        width: 100,
+                        height: 100,
                         child: CachedNetworkImage(
                           imageUrl: generation.originalImageUrl,
                           fit: BoxFit.cover,
@@ -373,7 +348,7 @@ class _ProjectCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,18 +360,30 @@ class _ProjectCard extends StatelessWidget {
                               weight: FontWeight.w700,
                             ),
                           ),
+                          const SizedBox(height: 6),
+                          Text(
+                            brief,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              height: 1.35,
+                              color: p.muted,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           StatusBadge(status: generation.status),
                           const SizedBox(height: 6),
                           Text(
-                            _formatDate(generation.createdAt),
+                            rel,
                             style: GoogleFonts.dmSans(
                               fontSize: 12,
                               color: p.muted,
                             ),
                           ),
                           if (previewUrls.isNotEmpty) ...[
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
@@ -407,8 +394,8 @@ class _ProjectCard extends StatelessWidget {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
                                         child: SizedBox(
-                                          width: 40,
-                                          height: 40,
+                                          width: 48,
+                                          height: 48,
                                           child: CachedNetworkImage(
                                             imageUrl: u,
                                             fit: BoxFit.cover,
@@ -447,11 +434,13 @@ class _ProjectCard extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            tooltip: 'Excluir projeto',
-            onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline_rounded),
-            color: p.tertiary,
+          Tooltip(
+            message: 'Excluir projeto',
+            child: IconButton(
+              onPressed: onDelete,
+              icon: const Icon(Icons.delete_outline_rounded),
+              color: p.tertiary,
+            ),
           ),
         ],
       ),
@@ -470,7 +459,7 @@ class _ShimmerTile extends StatelessWidget {
       baseColor: palette.surface,
       highlightColor: palette.muted.withValues(alpha: 0.2),
       child: Container(
-        height: 120,
+        height: 140,
         decoration: BoxDecoration(
           color: palette.surface,
           borderRadius: BorderRadius.circular(16),

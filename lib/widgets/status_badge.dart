@@ -36,15 +36,15 @@ class StatusBadge extends StatelessWidget {
     final kind = _kindFor(status);
     final label = _label(kind);
     final color = _color(kind);
-    final bg = color.withValues(alpha: 0.18);
+    final bg = color.withValues(alpha: 0.28);
 
     Widget text = Text(
       label,
       style: GoogleFonts.dmSans(
         fontSize: 12,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w800,
         color: color,
-        letterSpacing: 0.2,
+        letterSpacing: 0.25,
       ),
     );
 
@@ -62,7 +62,14 @@ class StatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        border: Border.all(color: color.withValues(alpha: 0.55), width: 1.25),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.22),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: text,
     );

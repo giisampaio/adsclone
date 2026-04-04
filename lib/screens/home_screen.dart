@@ -1,8 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:adscloneia/models/generation.dart';
 import 'package:adscloneia/screens/generation_detail_screen.dart';
 import 'package:adscloneia/services/generation_service.dart';
 import 'package:adscloneia/theme/app_palette.dart';
+import 'package:adscloneia/utils/project_card_helpers.dart';
+import 'package:adscloneia/widgets/app_empty_state.dart';
 import 'package:adscloneia/widgets/constrained_page.dart';
+import 'package:adscloneia/widgets/hover_card.dart';
 import 'package:adscloneia/widgets/status_badge.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +29,15 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+class _HomeData {
+  _HomeData(this.generations, this.previewUrls);
+
+  final List<Generation> generations;
+  final Map<String, List<String>> previewUrls;
+}
+
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<List<Generation>> _future;
+  late Future<_HomeData> _future;
 
   @override
   void initState() {
@@ -41,10 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<List<Generation>> _load() async {
+  Future<_HomeData> _load() async {
     final s = widget.service;
-    if (s == null) return [];
-    return s.fetchGenerations(limit: 50);
+    if (s == null) return _HomeData([], {});
+    final gens = await s.fetchGenerations(limit: 50);
+    final top = gens.take(5).map((g) => g.id).toList();
+    final previews = top.isEmpty
+        ? <String, List<String>>{}
+        : await s.fetchPreviewImageUrlsByGenerationIds(top, limitPerGen: 5);
+    return _HomeData(gens, previews);
   }
 
   Future<void> _reload() async {
@@ -64,6 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  static int _recentCols(double width) {
+    if (width >= 1024) return 3;
+    if (width >= 600) return 2;
+    return 1;
   }
 
   @override
@@ -94,28 +117,30 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         color: p.accent,
         onRefresh: _reload,
-        child: FutureBuilder<List<Generation>>(
+        child: FutureBuilder<_HomeData>(
           future: _future,
           builder: (context, snap) {
             final px = context.p;
             final loading = snap.connectionState == ConnectionState.waiting;
-            final items = snap.data ?? [];
+            final items = snap.data?.generations ?? [];
+            final previews = snap.data?.previewUrls ?? {};
             final totalVariants =
                 items.fold<int>(0, (a, g) => a + g.variantCount);
             final completed = items.where((g) {
-              final s = g.status.toLowerCase();
-              return s == 'complete' || s == 'completed';
+              final s0 = g.status.toLowerCase();
+              return s0 == 'complete' || s0 == 'completed';
             }).length;
             final ratePct = items.isEmpty
                 ? 0
                 : ((completed / items.length) * 100).round();
+            final recentCount = math.min(5, items.length);
 
             return CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
                   child: MaxWidthBox(
-                    maxWidth: 900,
+                    maxWidth: 1200,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, 28, 0, 8),
                       child: Column(
@@ -157,41 +182,48 @@ class _HomeScreenState extends State<HomeScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: _StatCard(
-                                    label: 'Total pedido',
-                                    value: '$totalVariants',
-                                    subtitle: 'variações (soma dos projetos)',
+                                  child: HoverScaleCard(
+                                    borderRadius: 16,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(18),
+                                      child: _StatCardInner(
+                                        label: 'Total pedido',
+                                        value: '$totalVariants',
+                                        subtitle:
+                                            'variações (soma dos projetos)',
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
-                                  child: _StatCard(
-                                    label: 'Taxa de sucesso',
-                                    value: '$ratePct%',
-                                    subtitle: '${items.length} projetos',
+                                  child: HoverScaleCard(
+                                    borderRadius: 16,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(18),
+                                      child: _StatCardInner(
+                                        label: 'Taxa de sucesso',
+                                        value: '$ratePct%',
+                                        subtitle: '${items.length} projetos',
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           const SizedBox(height: 28),
-                          FilledButton(
-                            onPressed: widget.onNavigateToCreate,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: px.accent,
-                              foregroundColor: px.onAccent,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                                horizontal: 24,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            child: Text(
-                              'Criar novo',
-                              style: GoogleFonts.dmSans(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
+                          Tooltip(
+                            message:
+                                'Criar novas variações de um criativo',
+                            child: FilledButton(
+                              onPressed: widget.onNavigateToCreate,
+                              style: _accentFilledHoverStyle(px),
+                              child: Text(
+                                'Criar novo',
+                                style: GoogleFonts.dmSans(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
@@ -211,45 +243,69 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 if (!loading && items.isEmpty)
-                  SliverToBoxAdapter(
+                  SliverFillRemaining(
+                    hasScrollBody: false,
                     child: MaxWidthBox(
                       maxWidth: 900,
-                      child: Text(
-                        'Nenhum projeto ainda. Toque em Criar novo.',
-                        style: GoogleFonts.dmSans(color: px.muted),
+                      child: AppEmptyState(
+                        icon: Icons.image_outlined,
+                        secondaryIcon: Icons.auto_awesome_rounded,
+                        title: 'Nenhum projeto ainda',
+                        subtitle:
+                            'Comece enviando seu primeiro criativo campeão',
+                        actionLabel: 'Criar primeiro projeto',
+                        onAction: widget.onNavigateToCreate,
                       ),
                     ),
                   ),
                 if (!loading && items.isNotEmpty)
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final g = items[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                  SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      final cols = _recentCols(constraints.crossAxisExtent);
+                      return SliverPadding(
+                        padding: const EdgeInsets.only(bottom: 32),
+                        sliver: SliverToBoxAdapter(
                           child: MaxWidthBox(
-                            maxWidth: 900,
-                            child: _RecentProjectTile(
-                              generation: g,
-                              onTap: () async {
-                                await Navigator.of(context).push<void>(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => GenerationDetailScreen(
-                                      service: widget.service!,
-                                      generation: g,
-                                    ),
-                                  ),
+                            maxWidth: 1200,
+                            child: LayoutBuilder(
+                              builder: (context, c2) {
+                                final w = c2.maxWidth;
+                                final colW = (w - (cols - 1) * 16) / cols;
+                                return Wrap(
+                                  spacing: 16,
+                                  runSpacing: 16,
+                                  children: [
+                                    for (var i = 0; i < recentCount; i++)
+                                      SizedBox(
+                                        width: colW,
+                                        child: _RecentProjectTile(
+                                          generation: items[i],
+                                          previewUrls:
+                                              previews[items[i].id] ?? [],
+                                          onTap: () async {
+                                            await Navigator.of(context)
+                                                .push<void>(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) =>
+                                                    GenerationDetailScreen(
+                                                  service: widget.service!,
+                                                  generation: items[i],
+                                                ),
+                                              ),
+                                            );
+                                            if (mounted) await _reload();
+                                          },
+                                        ),
+                                      ),
+                                  ],
                                 );
-                                if (mounted) await _reload();
                               },
                             ),
                           ),
-                        );
-                      },
-                      childCount: items.length < 5 ? items.length : 5,
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             );
           },
@@ -259,8 +315,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
+ButtonStyle _accentFilledHoverStyle(AppPalette px) {
+  return FilledButton.styleFrom(
+    backgroundColor: px.accent,
+    foregroundColor: px.onAccent,
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+    elevation: 2,
+    shadowColor: px.accent.withValues(alpha: 0.45),
+  ).copyWith(
+    elevation: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.hovered)) return 10;
+      if (states.contains(WidgetState.pressed)) return 1;
+      return 3;
+    }),
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.hovered)) {
+        return Color.alphaBlend(
+          Colors.white.withValues(alpha: 0.12),
+          px.accent,
+        );
+      }
+      return px.accent;
+    }),
+  );
+}
+
+class _StatCardInner extends StatelessWidget {
+  const _StatCardInner({
     required this.label,
     required this.value,
     required this.subtitle,
@@ -273,43 +357,35 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.p;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: p.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: p.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: p.muted,
-              fontWeight: FontWeight.w500,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            color: p.muted,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: p.mono(
-              fontSize: 26,
-              weight: FontWeight.w700,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: p.mono(
+            fontSize: 26,
+            weight: FontWeight.w700,
           ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              color: p.muted,
-              height: 1.3,
-            ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: GoogleFonts.dmSans(
+            fontSize: 11,
+            color: p.muted,
+            height: 1.3,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -317,84 +393,138 @@ class _StatCard extends StatelessWidget {
 class _RecentProjectTile extends StatelessWidget {
   const _RecentProjectTile({
     required this.generation,
+    required this.previewUrls,
     required this.onTap,
   });
 
   final Generation generation;
+  final List<String> previewUrls;
   final VoidCallback onTap;
-
-  static String _formatDate(DateTime d) {
-    final local = d.toLocal();
-    return '${local.day.toString().padLeft(2, '0')}/'
-        '${local.month.toString().padLeft(2, '0')}/'
-        '${local.year}';
-  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.p;
-    return Material(
-      color: p.surface,
-      borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: CachedNetworkImage(
-                    imageUrl: generation.originalImageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Shimmer.fromColors(
-                      baseColor: p.surface,
-                      highlightColor: p.muted.withValues(alpha: 0.25),
-                      child: Container(color: p.background),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: p.background,
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        color: p.muted,
-                        size: 22,
-                      ),
+    final brief = generationCreativeBrief(generation.analysis);
+    final rel = formatRelativeTimePt(generation.createdAt);
+
+    return HoverScaleCard(
+      borderRadius: 14,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 80,
+                height: 80,
+                child: CachedNetworkImage(
+                  imageUrl: generation.originalImageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Shimmer.fromColors(
+                    baseColor: p.surface,
+                    highlightColor: p.muted.withValues(alpha: 0.25),
+                    child: Container(color: p.background),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: p.background,
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: p.muted,
+                      size: 22,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${generation.variantCount} variações',
-                      style: p.mono(
-                        fontSize: 14,
-                        weight: FontWeight.w700,
-                      ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${generation.variantCount} variações',
+                    style: p.mono(
+                      fontSize: 14,
+                      weight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatDate(generation.createdAt),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        color: p.muted,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    brief,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      height: 1.3,
+                      color: p.muted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    rel,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      color: p.muted,
+                    ),
+                  ),
+                  if (previewUrls.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (final u in previewUrls.take(5))
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: SizedBox(
+                                  width: 32,
+                                  height: 32,
+                                  child: CachedNetworkImage(
+                                    imageUrl: u,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                        Shimmer.fromColors(
+                                      baseColor: p.surface,
+                                      highlightColor: p.muted
+                                          .withValues(alpha: 0.2),
+                                      child: Container(color: p.background),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                      color: p.background,
+                                      child: Icon(
+                                        Icons.image_outlined,
+                                        size: 14,
+                                        color: p.muted,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
-              StatusBadge(status: generation.status),
-              const SizedBox(width: 4),
-              Icon(Icons.chevron_right_rounded, color: p.muted),
-            ],
-          ),
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                StatusBadge(status: generation.status),
+                const SizedBox(height: 8),
+                Icon(Icons.chevron_right_rounded, color: p.muted, size: 22),
+              ],
+            ),
+          ],
         ),
       ),
     );

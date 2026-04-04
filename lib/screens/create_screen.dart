@@ -49,6 +49,7 @@ class _CreateScreenState extends State<CreateScreen>
   RealtimeChannel? _realtimeChannel;
 
   int _quantity = 5;
+  bool _generateButtonHovered = false;
 
   Timer? _genProgressTimer;
   DateTime? _generatingSince;
@@ -525,23 +526,27 @@ class _CreateScreenState extends State<CreateScreen>
                         Positioned(
                           top: 10,
                           right: 10,
-                          child: Material(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(10),
-                            child: InkWell(
-                              onTap: _showSourceSheet,
+                          child: Tooltip(
+                            message: 'Selecionar outra imagem',
+                            child: Material(
+                              color: Colors.black54,
                               borderRadius: BorderRadius.circular(10),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                child: Text(
-                                  'Trocar',
-                                  style: GoogleFonts.dmSans(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                              child: InkWell(
+                                onTap: _showSourceSheet,
+                                borderRadius: BorderRadius.circular(10),
+                                hoverColor: Colors.white24,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  child: Text(
+                                    'Trocar',
+                                    style: GoogleFonts.dmSans(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -570,38 +575,76 @@ class _CreateScreenState extends State<CreateScreen>
                 alignment: WrapAlignment.center,
                 children: _quantityChoices.map((q) {
                   final sel = _quantity == q;
-                  return FilterChip(
-                    label: Text(
-                      '$q',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+                  return Tooltip(
+                    message: 'Número de variações a gerar',
+                    child: FilterChip(
+                      label: Text(
+                        '$q',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+                        ),
                       ),
+                      selected: sel,
+                      onSelected: (_) => setState(() => _quantity = q),
+                      selectedColor: p.accent.withValues(alpha: 0.28),
+                      checkmarkColor: p.accent,
                     ),
-                    selected: sel,
-                    onSelected: (_) => setState(() => _quantity = q),
-                    selectedColor: p.accent.withValues(alpha: 0.28),
-                    checkmarkColor: p.accent,
                   );
                 }).toList(),
               ),
               const SizedBox(height: 28),
-              Material(
-                borderRadius: BorderRadius.circular(16),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: _runGeneration,
-                  child: Ink(
-                    height: 54,
-                    decoration: BoxDecoration(gradient: p.heroGradient),
-                    child: Center(
-                      child: Text(
-                        'Gerar $_quantity ${_quantity == 1 ? 'variação' : 'variações'}',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: p.onAccent,
-                        ),
+              MouseRegion(
+                onEnter: (_) => setState(() => _generateButtonHovered = true),
+                onExit: (_) => setState(() => _generateButtonHovered = false),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: p.heroGradient,
+                    boxShadow: _generateButtonHovered
+                        ? [
+                            BoxShadow(
+                              color: p.accent.withValues(alpha: 0.5),
+                              blurRadius: 22,
+                              offset: const Offset(0, 9),
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: p.accent.withValues(alpha: 0.3),
+                              blurRadius: 14,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: _runGeneration,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (_generateButtonHovered)
+                            ColoredBox(
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                          Center(
+                            child: Text(
+                              'Gerar $_quantity ${_quantity == 1 ? 'variação' : 'variações'}',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: p.onAccent,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -967,17 +1010,25 @@ class _CreateScreenState extends State<CreateScreen>
               }).toList(),
             ),
             const SizedBox(height: 32),
-            FilledButton(
-              onPressed: _openGallery,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+            Tooltip(
+              message:
+                  'Abrir o projeto com todas as variações e opção de download',
+              child: FilledButton(
+                onPressed: _openGallery,
+                style: _createFilledAccentHoverStyle(p).copyWith(
+                  minimumSize: WidgetStateProperty.all(
+                    const Size(double.infinity, 50),
+                  ),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                'Ver galeria completa',
-                style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                child: Text(
+                  'Ver galeria completa',
+                  style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -987,6 +1038,22 @@ class _CreateScreenState extends State<CreateScreen>
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
+                ),
+                foregroundColor: p.accent,
+                side: BorderSide(color: p.accent.withValues(alpha: 0.65)),
+              ).copyWith(
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return p.accent.withValues(alpha: 0.08);
+                  }
+                  return Colors.transparent;
+                }),
+                elevation: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.hovered)) return 2;
+                  return 0;
+                }),
+                shadowColor: WidgetStateProperty.all(
+                  p.accent.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(
@@ -999,6 +1066,30 @@ class _CreateScreenState extends State<CreateScreen>
       ),
     );
   }
+}
+
+ButtonStyle _createFilledAccentHoverStyle(AppPalette px) {
+  return FilledButton.styleFrom(
+    backgroundColor: px.accent,
+    foregroundColor: px.onAccent,
+    elevation: 2,
+    shadowColor: px.accent.withValues(alpha: 0.45),
+  ).copyWith(
+    elevation: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.hovered)) return 10;
+      if (states.contains(WidgetState.pressed)) return 1;
+      return 3;
+    }),
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.hovered)) {
+        return Color.alphaBlend(
+          Colors.white.withValues(alpha: 0.12),
+          px.accent,
+        );
+      }
+      return px.accent;
+    }),
+  );
 }
 
 class _AnimatedVariantThumb extends StatelessWidget {
