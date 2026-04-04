@@ -4,11 +4,14 @@ import 'package:adscloneia/models/generation.dart';
 import 'package:adscloneia/models/variant.dart';
 import 'package:adscloneia/services/generation_service.dart';
 import 'package:adscloneia/theme/app_palette.dart';
+import 'package:adscloneia/utils/download_helper.dart';
 import 'package:adscloneia/widgets/app_empty_state.dart';
 import 'package:adscloneia/widgets/constrained_page.dart';
 import 'package:adscloneia/widgets/status_badge.dart';
+import 'package:archive/archive.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -32,6 +35,7 @@ class GenerationDetailScreen extends StatefulWidget {
 class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
   final List<Variant> _variants = [];
   bool _loading = true;
+  bool _preparingAllDownload = false;
   RealtimeChannel? _channel;
 
   Generation get _g => widget.generation;
@@ -104,14 +108,13 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
   }
 
   Future<void> _downloadAllCompleted() async {
-    final urls = _variants
+    final completed = _variants
         .where((v) =>
             v.imageUrl.isNotEmpty &&
             (v.status.toLowerCase() == 'complete' ||
                 v.status.toLowerCase() == 'completed'))
-        .map((v) => v.imageUrl)
         .toList();
-    if (urls.isEmpty) {
+    if (completed.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Nenhuma imagem pronta para baixar.')),
@@ -119,18 +122,41 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
       }
       return;
     }
-    for (final u in urls) {
-      final uri = Uri.tryParse(u);
-      if (uri != null && await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (_preparingAllDownload) return;
+    setState(() => _preparingAllDownload = true);
+    try {
+      final archive = Archive();
+      for (var i = 0; i < completed.length; i++) {
+        final url = completed[i].imageUrl;
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode != 200) {
+          throw Exception(
+            'Falha ao baixar imagem ${i + 1} (HTTP ${response.statusCode})',
+          );
+        }
+        final bytes = response.bodyBytes;
+        archive.addFile(
+          ArchiveFile('variacao_${i + 1}.png', bytes.length, bytes),
+        );
       }
-    }
-    if (mounted && urls.length > 1) {
+      final zipBytes = ZipEncoder().encode(archive);
+      if (zipBytes == null) {
+        throw Exception('Não foi possível gerar o arquivo ZIP.');
+      }
+      final name = 'variacoes_${DateTime.now().millisecondsSinceEpoch}.zip';
+      await downloadZipFile(zipBytes, name);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${urls.length} imagens abertas no navegador para salvar.'),
-        ),
+        const SnackBar(content: Text('ZIP baixado com sucesso!')),
       );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao preparar o ZIP: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _preparingAllDownload = false);
     }
   }
 
@@ -232,10 +258,19 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
           Tooltip(
             message: 'Baixar todas as variações',
             child: TextButton.icon(
-              onPressed: _downloadAllCompleted,
-              icon: Icon(Icons.download_rounded, size: 20, color: p.secondary),
+              onPressed: _preparingAllDownload ? null : _downloadAllCompleted,
+              icon: _preparingAllDownload
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: p.secondary,
+                      ),
+                    )
+                  : Icon(Icons.download_rounded, size: 20, color: p.secondary),
               label: Text(
-                'Baixar todas',
+                _preparingAllDownload ? 'Preparando download...' : 'Baixar todas',
                 style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.w600,
                   color: p.secondary,
