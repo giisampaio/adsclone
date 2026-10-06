@@ -19,7 +19,7 @@ const existentes = new Set((await readdir(pasta)).map((a) => a.replace(/\.(jpe?g
 
 const perfumes = new Map();
 for (const par of carregarPares()) {
-  for (const p of [par.original, par.alt]) perfumes.set(p.id, p);
+  for (const p of [par.original, par.alt, par.nacional].filter(Boolean)) perfumes.set(p.id, p);
 }
 
 const fila = [...perfumes.values()].filter((p) => forcar || !existentes.has(p.id));

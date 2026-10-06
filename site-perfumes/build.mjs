@@ -163,7 +163,7 @@ ${js}
 }
 
 function avisarFotos(ctx) {
-  const perfumes = pares.flatMap((p) => [p.original, p.alt]);
+  const perfumes = pares.flatMap((p) => [p.original, p.alt, p.nacional].filter(Boolean));
   const semFoto = perfumes.filter((p) => !ctx.foto(p)).map((p) => p.id);
   const externas = perfumes.filter((p) => !fotosLocais.has(p.id) && ctx.foto(p)).length;
   console.log(`Fotos: ${fotosLocais.size} baixadas, ${externas} externas, ${semFoto.length} só com ilustração.`);

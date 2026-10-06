@@ -14,6 +14,7 @@
   --accent-ink: #fff7f8;
   --gold: #8f6a2c;
   --save: #2d6e52;
+  --nacional: #4b4f9a;
   --sombra: rgba(31, 26, 28, 0.35);
 
   --f-display: "Bodoni Moda", "Bodoni 72", Didot, "Times New Roman", Georgia, serif;
@@ -47,6 +48,7 @@
   --accent-ink: #fff5f7;
   --gold: #946726;
   --save: #2e7356;
+  --nacional: #5a4a9c;
   --sombra: rgba(90, 30, 50, 0.35);
   color-scheme: light;
 }
@@ -63,6 +65,7 @@
   --accent-ink: #1b1307;
   --gold: #cfae78;
   --save: #74cfa3;
+  --nacional: #9db4ee;
   --sombra: rgba(0, 0, 0, 0.6);
   color-scheme: dark;
 }
@@ -730,6 +733,61 @@ h4 {
   color: var(--accent);
 }
 
+.papel--nacional {
+  color: var(--nacional);
+}
+
+/* opção nacional no cartão */
+
+.cartao__nacional {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.cartao__nacional .papel {
+  margin-bottom: 0.15rem;
+}
+
+.cartao__nacional-nome {
+  margin: 0;
+  font-size: var(--t-2);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.cartao__nacional-preco {
+  margin: 0.15rem 0 0;
+  font-size: var(--t-1);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao__nacional-sem {
+  font-family: var(--f-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--nacional);
+  font-variant-numeric: lining-nums;
+}
+
+.frasco--mini {
+  width: 34px;
+  height: auto;
+  color: var(--ink);
+}
+
+.foto.frasco--mini {
+  width: 42px;
+  border-radius: 7px;
+}
+
 .nome {
   margin: 0;
   font-family: var(--f-display);
@@ -853,6 +911,28 @@ h4 {
 .anel--demo {
   --tam: 72px;
   --fundo-anel: var(--bg);
+}
+
+.anel--medio {
+  --tam: 104px;
+  --furo: 7px;
+  --fundo-anel: var(--paper);
+  background: conic-gradient(var(--nacional) calc(var(--p) * 1%), var(--line) 0);
+  animation: encher 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.anel--medio .anel__valor {
+  font-size: 2.1rem;
+}
+
+.anel--medio .anel__leg {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: var(--f-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
 }
 
 .anel--grande {
@@ -1305,8 +1385,100 @@ h4 {
   color: var(--ink-2);
 }
 
+.etapa--tres {
+  grid-template-columns: 180px repeat(3, minmax(0, 1fr));
+}
+
 .etapa__lado {
   min-width: 0;
+}
+
+.etapa__quem--original {
+  color: var(--gold);
+}
+
+.etapa__quem--alt {
+  color: var(--accent);
+}
+
+.etapa__quem--nacional {
+  color: var(--nacional);
+}
+
+/* seção da opção nacional */
+
+.nacional {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 190px;
+  align-items: start;
+  gap: clamp(1rem, 3vw, 2.25rem);
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--nacional);
+  border-radius: var(--raio-g);
+  background: var(--paper);
+}
+
+.nacional__frasco {
+  display: flex;
+  justify-content: center;
+}
+
+.nacional__corpo {
+  min-width: 0;
+}
+
+.nacional .nome {
+  margin: 0;
+  font-size: var(--t-6);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.nacional .nome__marca {
+  font-size: var(--t-2);
+}
+
+.nacional__resumo {
+  max-width: 62ch;
+  margin: 0.9rem 0 0;
+  color: var(--ink-2);
+}
+
+.nacional .ficha__dados {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.nacional .ficha__nota {
+  grid-column: auto;
+}
+
+.nacional .ficha__nota dd {
+  font-size: 1.9rem;
+}
+
+.nacional .compra {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.nacional .compra li:first-child .botao {
+  border-color: var(--nacional);
+  background: var(--nacional);
+  color: var(--paper);
+}
+
+.nacional .compra li:first-child .botao:hover {
+  filter: brightness(1.08);
+  color: var(--paper);
+}
+
+.nacional__numeros {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  text-align: center;
 }
 
 .etapa__quem {
@@ -1486,7 +1658,22 @@ h4 {
   border-bottom: 0;
 }
 
-.avaliacao__economia td:last-child {
+.avaliacao thead th small {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--f-mono);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.avaliacao--tres {
+  min-width: 520px;
+}
+
+.avaliacao__economia td:nth-child(n + 3) {
   font-weight: 700;
   color: var(--save);
 }
@@ -1632,6 +1819,42 @@ h4 {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .etapa--tres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .etapa--tres .etapa__cabeca {
+    grid-column: 1 / -1;
+  }
+
+  .nacional {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .nacional__numeros {
+    grid-column: 1 / -1;
+    order: -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1.5rem;
+    padding-top: 0;
+    text-align: left;
+  }
+
+  .nacional__numeros .duelo__eco,
+  .nacional__numeros .duelo__comuns {
+    max-width: 24ch;
+  }
+
+  .nacional .ficha__dados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nacional .ficha__nota {
+    grid-column: 1 / -1;
+  }
+
   .dicas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1715,6 +1938,32 @@ h4 {
 
   .filtros__ordem {
     justify-self: start;
+  }
+}
+
+.so-celular {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .so-celular {
+    display: inline;
+  }
+
+  .etapa--tres {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nacional {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nacional__frasco {
+    order: -2;
+  }
+
+  .nacional .compra {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

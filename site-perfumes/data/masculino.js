@@ -1,7 +1,8 @@
-// Top 40 masculino: perfume importado de referência × versão em conta.
+// Top 40 masculino: perfume importado de referência × versão em conta × opção nacional.
 //
-// Campos de cada perfume (original e alt):
-//   marca, nome, conc (EDT, EDP, Parfum, Elixir, Extrait, EDT Intense), ano,
+// Campos de cada perfume (original, alt e nacional):
+//   marca, nome, conc (EDT, EDP, Parfum, Elixir, Extrait, EDT Intense, EDP Intense,
+//   Deo Colônia, Deo Parfum), ano,
 //   familia, ml (tamanho de referência), preco [mín, máx] em R$ (faixa estimada),
 //   nota (0 a 10, curadoria), fixacao [horas mín, máx], projecao (1 a 5),
 //   notas { saida, coracao, fundo }, cor (cor do frasco/líquido na ilustração),
@@ -10,8 +11,12 @@
 //   As fotos ficam em data/imagens.js e imagens/perfumes/.
 //
 // Campos do par:
-//   semelhanca (%), grupo (filtro), acordes [[nome, intensidade 0-100]],
+//   semelhanca (% do alt), grupo (filtro), acordes [[nome, intensidade 0-100]],
 //   clima, periodo, ocasioes, veredito, paraQuem, diferencas, dica, outras.
+//
+// nacional (opcional): perfume de marca brasileira parecido com o original. Usa os
+//   mesmos campos de perfume (cor, tampa e forma são opcionais) e mais:
+//   semelhanca (% com o original) e resumo (por que lembra o original).
 
 export const masculino = [
   {

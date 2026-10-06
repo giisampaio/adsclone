@@ -1,9 +1,10 @@
 # Essência Gêmea
 
 Guia de perfumes importados e suas versões em conta, lado a lado. Traz o
-top 40 feminino e o top 40 masculino: cada página mostra o original e a
-alternativa com notas olfativas, fixação, projeção, nota da curadoria, economia
-por ml e botões de compra.
+top 40 feminino e o top 40 masculino: cada página mostra o original, a
+alternativa importada em conta e uma opção nacional (O Boticário, Natura, Eudora...),
+com notas olfativas, fixação, projeção, nota da curadoria, economia por ml e
+botões de compra.
 
 O site é estático (HTML + CSS + um pouco de JavaScript), gerado por um script
 Node sem dependências. Cada comparação vira uma página própria, o que ajuda no
@@ -77,6 +78,9 @@ Campos que mais importam:
   A economia é calculada pelo preço médio por ml.
 - `notas: { saida, coracao, fundo }`: as notas iguais nos dois perfumes ficam
   destacadas sozinhas.
+- `nacional` (opcional): o perfume de marca brasileira que lembra o original, com
+  os mesmos campos de perfume, mais `semelhanca` (com o original) e `resumo`.
+  Sem esse campo, a página do par mostra só o original e a alternativa.
 
 ## Fotos dos perfumes
 
@@ -87,10 +91,10 @@ opção disponível:
 2. **URL própria** em `data/imagens.js` → `fotos` (por exemplo, a imagem do
    produto fornecida pelo programa de afiliados da Amazon, Mercado Livre ou Shopee).
 3. **Foto do Fragrantica**, pelo número da página do perfume, já mapeado para os
-   160 perfumes em `data/imagens.js` → `fragrantica`.
+   perfumes em `data/imagens.js` → `fragrantica`.
 4. **Ilustração do frasco**, se a foto não carregar.
 
-Para baixar as 160 fotos para dentro do projeto (recomendado: o site fica mais
+Para baixar as fotos para dentro do projeto (recomendado: o site fica mais
 rápido e não depende de outro servidor):
 
 ```bash
@@ -117,5 +121,5 @@ no sitemap, no link canônico e nas prévias de compartilhamento.
 
 - Preços são faixas estimadas e mudam com frequência.
 - Semelhança, notas e fixação são avaliações da curadoria.
-- As alternativas são perfumes de marcas próprias, não falsificações.
+- As alternativas e as opções nacionais são perfumes de marcas próprias, não falsificações.
 - O site pode receber comissão pelos links (divulgação exigida pelos programas de afiliados).

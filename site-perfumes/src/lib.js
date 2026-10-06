@@ -15,6 +15,8 @@ export const GENEROS = {
 export const TOTAIS = { feminino: feminino.length, masculino: masculino.length };
 
 export const CONCENTRACOES = {
+  "Deo Colônia": "Desodorante Colônia",
+  "Deo Parfum": "Deo Parfum",
   EDT: "Eau de Toilette",
   "EDT Intense": "Eau de Toilette Intense",
   EDP: "Eau de Parfum",
@@ -44,8 +46,12 @@ export const normalizar = (s) =>
 
 const medio = ([min, max]) => (min + max) / 2;
 
+// Cores da ilustração para quem não definiu (usadas só se a foto não carregar).
+const FRASCO_PADRAO = { cor: "#d9c7a8", tampa: "prata", forma: "classico" };
+
 function prepararPerfume(p) {
   return {
+    ...FRASCO_PADRAO,
     ...p,
     id: slugify(`${p.marca} ${p.nome}`),
     titulo: `${p.marca} ${p.nome}`,
@@ -79,16 +85,24 @@ function montarLista(genero, lista) {
     const original = prepararPerfume(par.original);
     const alt = prepararPerfume(par.alt);
     const notasOriginal = todasNotas(original);
-    const emComum = notasOriginal.filter((n) => notaPresente(n, alt)).length;
+    const emComum = (p) => notasOriginal.filter((n) => notaPresente(n, p)).length;
+    const economia = (p) => Math.round((1 - p.precoMl / original.precoMl) * 100);
+    // Opção nacional (marca brasileira): opcional em cada par.
+    const nacional = par.nacional ? prepararPerfume(par.nacional) : null;
+    if (nacional) {
+      nacional.economia = economia(nacional);
+      nacional.notasEmComum = emComum(nacional);
+    }
     return {
       ...par,
       genero,
       rank: i + 1,
       original,
       alt,
+      nacional,
       slug: slugify(`${original.marca} ${original.nome} vs ${alt.nome}`),
-      economia: Math.round((1 - alt.precoMl / original.precoMl) * 100),
-      notasEmComum: emComum,
+      economia: economia(alt),
+      notasEmComum: emComum(alt),
       notasTotal: notasOriginal.length,
     };
   });

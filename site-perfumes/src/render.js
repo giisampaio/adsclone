@@ -159,6 +159,7 @@ function textoBusca(par) {
     ...par.acordes.map((a) => a[0]),
     ...Object.values(par.original.notas).flat(),
     ...Object.values(par.alt.notas).flat(),
+    ...(par.nacional ? [par.nacional.titulo, "nacional", ...Object.values(par.nacional.notas).flat()] : []),
   ];
   return normalizar(partes.join(" "));
 }
@@ -166,6 +167,18 @@ function textoBusca(par) {
 // ---------------------------------------------------------------------------
 // Cartão de comparação (listas e destaques)
 // ---------------------------------------------------------------------------
+
+function linhaNacional(n, ctx) {
+  return `<div class="cartao__nacional">
+      ${frasco(n, "frasco--mini", ctx)}
+      <div class="cartao__nacional-texto">
+        <p class="papel papel--nacional">Opção nacional</p>
+        <p class="cartao__nacional-nome">${esc(n.titulo)}</p>
+        <p class="cartao__nacional-preco">${fmtFaixa(n.preco)} · ${n.ml} ml</p>
+      </div>
+      <span class="cartao__nacional-sem" aria-label="${n.semelhanca}% de semelhança com o original">${n.semelhanca}<span class="pct">%</span></span>
+    </div>`;
+}
 
 export function cartao(par, ctx, nivel = 2) {
   const { original: o, alt: a } = par;
@@ -188,6 +201,7 @@ export function cartao(par, ctx, nivel = 2) {
         <p class="cartao__preco">${fmtFaixa(a.preco)}<span>${a.ml} ml</span></p>
       </div>
     </div>
+    ${par.nacional ? linhaNacional(par.nacional, ctx) : ""}
     <div class="cartao__base">
       <span class="selo-economia">${par.economia}% mais barato por ml</span>
       <span class="cartao__cta" aria-hidden="true">Comparar <span>→</span></span>
@@ -230,7 +244,7 @@ export function rodape(ctx) {
       <a href="${ctx.metodo()}">Como avaliamos</a>
     </nav>
     <div class="rodape__aviso">
-      <p>Guia independente. As marcas citadas pertencem aos seus donos e não têm vínculo com este site. As versões em conta são perfumes de marcas próprias, vendidos legalmente; não são falsificações.</p>
+      <p>Guia independente. As marcas citadas pertencem aos seus donos e não têm vínculo com este site. As versões em conta e as opções nacionais são perfumes de marcas próprias, vendidos legalmente; não são falsificações.</p>
       <p>Semelhança, notas e fixação são avaliações da curadoria e variam de pele para pele. Preços são faixas estimadas e mudam com frequência: confira o valor na loja. Podemos receber comissão por compras feitas pelos links, sem custo extra para você.</p>
       <p class="rodape__ano">© ${site.ano} ${esc(site.nome)}</p>
     </div>
@@ -270,9 +284,10 @@ export function paginaInicio(pares, ctx) {
   <div class="envoltorio abertura__in">
     <p class="olho">Guia de perfumes importados · edição ${site.ano}</p>
     <h1 class="abertura__titulo">O perfume que você deseja tem uma versão que <em>cabe no bolso.</em></h1>
-    <p class="abertura__texto">Comparamos ${pares.length} perfumes importados famosos com alternativas da mesma família olfativa. Para cada par, você vê as notas, a fixação, a projeção, a nota da curadoria e quanto economiza por ml.</p>
+    <p class="abertura__texto">Comparamos ${pares.length} perfumes importados famosos com uma alternativa importada em conta e uma opção nacional de marcas como O Boticário, Natura e Eudora. Para cada um, você vê as notas, a fixação, a projeção, a nota da curadoria e quanto economiza por ml.</p>
     <dl class="numeros">
       <div><dt>Comparações</dt><dd>${pares.length}</dd></div>
+      <div><dt>Opções nacionais</dt><dd>${pares.filter((p) => p.nacional).length}</dd></div>
       <div><dt>Economia média por ml</dt><dd>${media(pares, "economia")}<span class="pct">%</span></dd></div>
       <div><dt>Semelhança média</dt><dd>${media(pares, "semelhanca")}<span class="pct">%</span></dd></div>
     </dl>
@@ -326,7 +341,7 @@ export function paginaInicio(pares, ctx) {
 <section class="secao envoltorio">
   <div class="secao__cabeca">
     <h2 class="secao__titulo">Antes de comprar</h2>
-    <p class="secao__texto">As alternativas desta lista são perfumes legítimos de marcas como Lattafa, Armaf e Maison Alhambra. O risco está nas falsificações, que existem até dessas marcas.</p>
+    <p class="secao__texto">As alternativas desta lista são perfumes legítimos: importados de marcas como Lattafa, Armaf e Maison Alhambra, e nacionais de marcas como O Boticário, Natura e Eudora. O risco está nas falsificações, que existem até dessas marcas.</p>
   </div>
   <ul class="dicas">
     <li><h3>Prefira lojas oficiais</h3><p>Compre da loja oficial da marca ou de vendedores com muitas avaliações e nota alta no marketplace.</p></li>
@@ -364,14 +379,14 @@ export function paginaGenero(genero, pares, ctx) {
   <nav class="trilha" aria-label="Você está em"><a href="${ctx.inicio()}">Início</a><span aria-hidden="true">/</span><span>${info.nome}</span></nav>
   <p class="olho">Top ${lista.length} · edição ${site.ano}</p>
   <h1 class="cabeca__titulo">Perfumes ${info.plural} importados e suas versões em conta</h1>
-  <p class="cabeca__texto">Os ${lista.length} ${info.plural} mais desejados, cada um ao lado da alternativa que mais se aproxima dele. A ordem é o ranking da curadoria: fama do original, procura no Brasil e qualidade da alternativa.</p>
+  <p class="cabeca__texto">Os ${lista.length} ${info.plural} mais desejados, cada um ao lado da alternativa importada que mais se aproxima dele e de uma opção nacional. A ordem é o ranking da curadoria: fama do original, procura no Brasil e qualidade da alternativa.</p>
 </section>
 <section class="catalogo envoltorio" data-catalogo>
   <div class="filtros">
     <label class="filtros__busca" for="${idBusca}">
       <span class="sr">Buscar</span>
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <input id="${idBusca}" type="search" placeholder="Perfume, marca ou nota (ex.: baunilha)" autocomplete="off">
+      <input id="${idBusca}" type="search" placeholder="Perfume, marca ou nota (ex.: baunilha, Boticário)" autocomplete="off">
     </label>
     <div class="filtros__grupos" role="group" aria-label="Família olfativa">
       <button type="button" class="chip" data-filtro="todos" aria-pressed="true">Todos</button>
@@ -457,21 +472,25 @@ function iconeEtapa(i) {
     .join("")}</svg>`;
 }
 
-function chipsNotas(lista, outro) {
+// Destaca a nota quando ela aparece em algum dos perfumes comparados.
+function chipsNotas(lista, outros) {
   return `<ul class="notas">${lista
     .map((n) => {
-      const comum = notaPresente(n, outro);
+      const comum = outros.some((outro) => notaPresente(n, outro));
       return `<li class="nota-chip${comum ? " nota-chip--comum" : ""}">${esc(n)}${comum ? '<span class="sr"> (nos dois)</span>' : ""}</li>`;
     })
     .join("")}</ul>`;
 }
 
 function piramide(par) {
-  const { original: o, alt: a } = par;
-  return ETAPAS.map(([chave, nome, tempo], i) => `<div class="etapa">
+  const { original: o, alt: a, nacional: n } = par;
+  const lado = (p, chave, outros, papel) =>
+    `<div class="etapa__lado"><p class="etapa__quem etapa__quem--${papel}">${esc(p.nome)}</p>${chipsNotas(p.notas[chave], outros)}</div>`;
+  return ETAPAS.map(([chave, nome, tempo], i) => `<div class="etapa${n ? " etapa--tres" : ""}">
       <div class="etapa__cabeca">${iconeEtapa(i)}<h3>${nome}</h3><p>${tempo}</p></div>
-      <div class="etapa__lado"><p class="etapa__quem">${esc(o.nome)}</p>${chipsNotas(o.notas[chave], a)}</div>
-      <div class="etapa__lado"><p class="etapa__quem">${esc(a.nome)}</p>${chipsNotas(a.notas[chave], o)}</div>
+      ${lado(o, chave, n ? [a, n] : [a], "original")}
+      ${lado(a, chave, [o], "alt")}
+      ${n ? lado(n, chave, [o], "nacional") : ""}
     </div>`).join("");
 }
 
@@ -499,25 +518,66 @@ function resumoUso(par) {
 }
 
 function tabelaAvaliacao(par) {
-  const { original: o, alt: a } = par;
-  const linha = (criterio, vo, va, destaque = "") =>
-    `<tr${destaque ? ` class="${destaque}"` : ""}><th scope="row">${criterio}</th><td>${vo}</td><td>${va}</td></tr>`;
-  return `<div class="tabela-rolagem"><table class="avaliacao">
-      <thead><tr><th scope="col">Critério</th><th scope="col">${esc(o.nome)}</th><th scope="col">${esc(a.nome)}</th></tr></thead>
+  const perfumes = [par.original, par.alt, par.nacional].filter(Boolean);
+  const linha = (criterio, valor, destaque = "") =>
+    `<tr${destaque ? ` class="${destaque}"` : ""}><th scope="row">${criterio}</th>${perfumes.map((p) => `<td>${valor(p)}</td>`).join("")}</tr>`;
+  const papeis = ["Original", "Importado em conta", "Nacional"];
+  return `<div class="tabela-rolagem"><table class="avaliacao${par.nacional ? " avaliacao--tres" : ""}">
+      <thead><tr><th scope="col">Critério</th>${perfumes.map((p, i) => `<th scope="col"><small>${papeis[i]}</small>${esc(p.nome)}</th>`).join("")}</tr></thead>
       <tbody>
-        ${linha("Nota da curadoria", `${fmtNota(o.nota)}/10`, `${fmtNota(a.nota)}/10`)}
-        ${linha("Fixação", fmtHoras(o.fixacao), fmtHoras(a.fixacao))}
-        ${linha("Projeção", PROJECAO[o.projecao], PROJECAO[a.projecao])}
-        ${linha("Concentração", esc(CONCENTRACOES[o.conc] || o.conc), esc(CONCENTRACOES[a.conc] || a.conc))}
-        ${linha("Frasco de referência", `${o.ml} ml`, `${a.ml} ml`)}
-        ${linha("Preço estimado", fmtFaixa(o.preco), fmtFaixa(a.preco))}
-        ${linha("Preço por ml", `≈ ${fmtPorMl(o.precoMl)}`, `≈ ${fmtPorMl(a.precoMl)}`, "avaliacao__economia")}
+        ${linha("Nota da curadoria", (p) => `${fmtNota(p.nota)}/10`)}
+        ${par.nacional ? linha("Semelhança com o original", (p) => (p === par.original ? "—" : `${p === par.alt ? par.semelhanca : p.semelhanca}%`)) : ""}
+        ${linha("Fixação", (p) => fmtHoras(p.fixacao))}
+        ${linha("Projeção", (p) => PROJECAO[p.projecao])}
+        ${linha("Concentração", (p) => esc(CONCENTRACOES[p.conc] || p.conc))}
+        ${linha("Frasco de referência", (p) => `${p.ml} ml`)}
+        ${linha("Preço estimado", (p) => fmtFaixa(p.preco))}
+        ${linha("Preço por ml", (p) => `≈ ${fmtPorMl(p.precoMl)}`, "avaliacao__economia")}
       </tbody>
     </table></div>`;
 }
 
+function secaoNacional(par, ctx) {
+  const { original: o, nacional: n } = par;
+  if (!n) return "";
+  const eco = n.economia > 0
+    ? `<p class="duelo__eco"><strong>${n.economia}<span class="pct">%</span></strong> mais barato por ml</p>`
+    : `<p class="duelo__eco">Preço por ml parecido com o original</p>`;
+  return `
+<section class="secao envoltorio" aria-labelledby="titulo-nacional">
+  <div class="secao__cabeca">
+    <h2 class="secao__titulo" id="titulo-nacional">Opção nacional</h2>
+    <p class="secao__texto">Prefere uma marca brasileira, fácil de achar em loja física e com troca simples? Este é o nacional que mais lembra o ${esc(o.nome)}.</p>
+  </div>
+  <article class="nacional">
+    <div class="nacional__frasco">${frasco(n, "frasco--ficha", ctx)}</div>
+    <div class="nacional__corpo">
+      <p class="papel papel--nacional">Opção nacional</p>
+      ${nomePerfume(n, "h3", "nome")}
+      <p class="ficha__meta">${esc(CONCENTRACOES[n.conc] || n.conc)}${n.ano ? ` · ${n.ano}` : ""}</p>
+      <p class="nacional__resumo">${esc(n.resumo)}</p>
+      <dl class="ficha__dados">
+        <div class="ficha__nota"><dt>Nota da curadoria</dt><dd>${fmtNota(n.nota)}<small>/10</small></dd></div>
+        <div><dt>Preço estimado</dt><dd>${fmtFaixa(n.preco)}<small>${n.ml} ml</small></dd></div>
+        <div><dt>Preço por ml</dt><dd>≈ ${fmtPorMl(n.precoMl)}</dd></div>
+        <div><dt>Fixação</dt><dd>${fmtHoras(n.fixacao)}</dd></div>
+        <div><dt>Projeção</dt><dd>${gotas(n.projecao)}<small>${PROJECAO[n.projecao]}</small></dd></div>
+        <div><dt>Família</dt><dd class="ficha__familia">${esc(n.familia)}</dd></div>
+      </dl>
+      <p class="compra__titulo">Ver preço em</p>
+      ${botoesCompra(n)}
+    </div>
+    <div class="nacional__numeros">
+      ${anel(n.semelhanca, "anel--medio")}
+      ${eco}
+      <p class="duelo__comuns">${n.notasEmComum} de ${par.notasTotal} notas do original aparecem no nacional</p>
+    </div>
+  </article>
+</section>`;
+}
+
 export function paginaPar(par, pares, ctx) {
-  const { original: o, alt: a } = par;
+  const { original: o, alt: a, nacional: n } = par;
   const info = GENEROS[par.genero];
   const mesmos = pares.filter((p) => p.genero === par.genero);
   const relacionados = [1, 2, 3].map((k) => mesmos[(par.rank - 1 + k) % mesmos.length]);
@@ -542,11 +602,11 @@ export function paginaPar(par, pares, ctx) {
     </div>
     ${ficha(a, "alt", ctx)}
   </div>
-</section>
+</section>${secaoNacional(par, ctx)}
 <section class="secao envoltorio">
   <div class="secao__cabeca">
     <h2 class="secao__titulo">Pirâmide olfativa</h2>
-    <p class="secao__texto"><span class="legenda-comum" aria-hidden="true"></span>Notas destacadas aparecem nos dois perfumes.</p>
+    <p class="secao__texto"><span class="legenda-comum" aria-hidden="true"></span>${n ? "Notas destacadas aparecem no original e em pelo menos uma das versões." : "Notas destacadas aparecem nos dois perfumes."}</p>
   </div>
   <div class="piramide">${piramide(par)}</div>
 </section>
@@ -565,7 +625,7 @@ export function paginaPar(par, pares, ctx) {
 <section class="secao envoltorio">
   <div class="secao__cabeca">
     <h2 class="secao__titulo">Avaliação lado a lado</h2>
-    <p class="secao__texto">Valores da curadoria. Fixação e projeção mudam conforme a pele, o clima e a quantidade aplicada.</p>
+    <p class="secao__texto">Valores da curadoria. Fixação e projeção mudam conforme a pele, o clima e a quantidade aplicada.${n ? '<span class="so-celular"> Arraste a tabela para o lado para ver o nacional.</span>' : ""}</p>
   </div>
   ${tabelaAvaliacao(par)}
 </section>
@@ -586,8 +646,8 @@ export function paginaPar(par, pares, ctx) {
     rota: par.slug,
     genero: par.genero,
     ativo: par.genero,
-    titulo: `Perfume parecido com ${o.titulo}: ${a.titulo} | ${site.nome}`,
-    descricao: `${a.titulo} tem ${par.semelhanca}% de semelhança com o ${o.titulo} e custa cerca de ${par.economia}% menos por ml. Compare notas, fixação, projeção e onde comprar.`,
+    titulo: `Perfume parecido com ${o.titulo}: ${a.titulo}${n ? ` e ${n.titulo}` : ""} | ${site.nome}`,
+    descricao: `${a.titulo} tem ${par.semelhanca}% de semelhança com o ${o.titulo} e custa cerca de ${par.economia}% menos por ml.${n ? ` Opção nacional: ${n.titulo}.` : ""} Compare notas, fixação, projeção e onde comprar.`,
     caminho: `${par.genero}/${par.slug}/`,
     imagem: ctx.foto(o),
     corpo,
@@ -618,6 +678,8 @@ export function paginaMetodo(pares, ctx) {
 <section class="envoltorio texto-longo">
   <h2>Escolha dos pares</h2>
   <p>Partimos dos importados mais desejados no Brasil e buscamos, para cada um, a alternativa que a comunidade de perfumaria mais reconhece como parecida: avaliações de usuários, fóruns e comparações lado a lado. Quando há mais de uma boa opção, ela aparece em "Outras alternativas".</p>
+  <h2>Opção nacional</h2>
+  <p>Cada comparação também traz um perfume de marca brasileira, como O Boticário, Natura ou Eudora, escolhido pelo DNA olfativo parecido com o do importado. Os nacionais não são cópias declaradas: costumam lembrar o original no estilo e em parte das notas, por isso a semelhança tende a ser menor que a da alternativa importada. Em troca, são fáceis de achar em loja física, têm troca simples e muitas vezes saem mais baratos.</p>
   <h2>Ranking</h2>
   <p>A ordem dos rankings é editorial. Ela pesa a fama do perfume original, a procura no Brasil e a qualidade da versão em conta.</p>
   <h2>Semelhança</h2>
@@ -633,7 +695,7 @@ export function paginaMetodo(pares, ctx) {
   <h2>Links de compra</h2>
   <p>Os botões levam a buscas ou a produtos em lojas como Amazon, Mercado Livre e Shopee. Alguns links podem ser de afiliado: se você comprar por eles, podemos receber uma comissão, sem custo extra para você. Isso não muda as avaliações.</p>
   <h2>Marcas e originalidade</h2>
-  <p>Não temos vínculo com nenhuma das marcas citadas. As versões em conta são perfumes de marcas próprias, como Lattafa, Armaf, Maison Alhambra, Afnan, Al Haramain, Rasasi e French Avenue, e não são falsificações nem réplicas dos frascos originais.</p>
+  <p>Não temos vínculo com nenhuma das marcas citadas. As versões em conta são perfumes de marcas próprias, como Lattafa, Armaf, Maison Alhambra, Afnan, Al Haramain, Rasasi e French Avenue, e as opções nacionais são de marcas brasileiras. Nenhuma delas é falsificação nem réplica dos frascos originais.</p>
   <p><a class="link-seta" href="${ctx.genero("feminino")}">Ver o top ${TOTAIS.feminino} feminino <span aria-hidden="true">→</span></a> <a class="link-seta" href="${ctx.genero("masculino")}">Ver o top ${TOTAIS.masculino} masculino <span aria-hidden="true">→</span></a></p>
 </section>`;
   return {
