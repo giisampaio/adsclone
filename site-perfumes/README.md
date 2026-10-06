@@ -1,7 +1,7 @@
 # Essência Gêmea
 
 Guia de perfumes importados e suas versões em conta, lado a lado. Traz o
-top 40 feminino e o top 40 masculino: cada página mostra o original, a
+top 100 feminino e o top 100 masculino: cada página mostra o original, a
 alternativa importada em conta e uma opção nacional (O Boticário, Natura, Eudora...),
 com notas olfativas, fixação, projeção, nota da curadoria, economia por ml e
 botões de compra.
@@ -17,8 +17,8 @@ data/
   site.js        nome do site, domínio, tag de afiliado da Amazon e lojas
   links.js       seus links de afiliado por perfume (substituem os links de busca)
   imagens.js     de onde vem a foto de cada perfume
-  feminino.js    top 40 feminino
-  masculino.js   top 40 masculino (os campos estão explicados no topo do arquivo)
+  feminino.js    top 100 feminino
+  masculino.js   top 100 masculino (os campos estão explicados no topo do arquivo)
 src/
   lib.js         cálculos: economia por ml, notas em comum, links de compra
   render.js      templates HTML de todas as páginas
@@ -35,7 +35,7 @@ Precisa de Node 18 ou mais recente.
 ```bash
 npm run build   # gera dist/
 npm run dev     # gera e abre em http://localhost:4173
-npm run previa  # gera previa/essencia-gemea.html, um arquivo único navegável
+npm run previa  # gera previa/essencia-gemea.html (navegável) e as fotos em previa/fotos-N.css
 ```
 
 ## Links de afiliado
@@ -66,7 +66,7 @@ para links de afiliado.
 ## Adicionar ou editar perfumes
 
 Cada par fica em `data/feminino.js` ou `data/masculino.js`. A posição no array é
-a posição no ranking. Para adicionar o 41º, copie um bloco existente, ajuste os
+a posição no ranking. Para adicionar o 101º, copie um bloco existente, ajuste os
 campos e rode `npm run build`: a página nova, o card no ranking e o sitemap são
 gerados automaticamente.
 

@@ -1,4 +1,4 @@
-// Top 40 feminino: perfume importado de referência × versão em conta × opção nacional.
+// Top 100 feminino: perfume importado de referência × versão em conta × opção nacional.
 // Os campos estão explicados em data/masculino.js.
 
 export const feminino = [

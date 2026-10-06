@@ -1,4 +1,4 @@
-// Top 40 masculino: perfume importado de referência × versão em conta × opção nacional.
+// Top 100 masculino: perfume importado de referência × versão em conta × opção nacional.
 //
 // Campos de cada perfume (original, alt e nacional):
 //   marca, nome, conc (EDT, EDP, Parfum, Elixir, Extrait, EDT Intense, EDP Intense,
