@@ -17,6 +17,7 @@ export const TOTAIS = { feminino: feminino.length, masculino: masculino.length }
 export const CONCENTRACOES = {
   "Deo Colônia": "Desodorante Colônia",
   "Deo Parfum": "Deo Parfum",
+  "Body Splash": "Body splash",
   EDT: "Eau de Toilette",
   "EDT Intense": "Eau de Toilette Intense",
   EDP: "Eau de Parfum",

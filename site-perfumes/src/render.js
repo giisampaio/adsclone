@@ -168,11 +168,15 @@ function textoBusca(par) {
 // Cartão de comparação (listas e destaques)
 // ---------------------------------------------------------------------------
 
+// Abaixo de 60% de semelhança, o nacional é apresentado como "no mesmo estilo".
+const PARECIDO = 60;
+const papelNacional = (n) => (n.semelhanca >= PARECIDO ? "Opção nacional" : "Nacional no mesmo estilo");
+
 function linhaNacional(n, ctx) {
   return `<div class="cartao__nacional">
       ${frasco(n, "frasco--mini", ctx)}
       <div class="cartao__nacional-texto">
-        <p class="papel papel--nacional">Opção nacional</p>
+        <p class="papel papel--nacional">${papelNacional(n)}</p>
         <p class="cartao__nacional-nome">${esc(n.titulo)}</p>
         <p class="cartao__nacional-preco">${fmtFaixa(n.preco)} · ${n.ml} ml</p>
       </div>
@@ -474,6 +478,7 @@ function iconeEtapa(i) {
 
 // Destaca a nota quando ela aparece em algum dos perfumes comparados.
 function chipsNotas(lista, outros) {
+  if (!lista.length) return `<p class="notas__vazio">Não divulgadas pela marca</p>`;
   return `<ul class="notas">${lista
     .map((n) => {
       const comum = outros.some((outro) => notaPresente(n, outro));
@@ -539,7 +544,19 @@ function tabelaAvaliacao(par) {
 
 function secaoNacional(par, ctx) {
   const { original: o, nacional: n } = par;
-  if (!n) return "";
+  if (!n) {
+    if (!par.semNacional) return "";
+    return `
+<section class="secao envoltorio">
+  <div class="secao__cabeca">
+    <h2 class="secao__titulo">Opção nacional</h2>
+    <p class="secao__texto">Ainda não há um perfume nacional com o DNA do ${esc(o.nome)}: nenhuma marca brasileira tem hoje ${esc(par.semNacional)}. Se a ideia é economizar, a versão importada acima é o caminho mais próximo.</p>
+  </div>
+</section>`;
+  }
+  const intro = n.semelhanca >= PARECIDO
+    ? `Prefere uma marca brasileira, fácil de achar em loja física e com troca simples? Este é o nacional que mais lembra o ${esc(o.nome)}.`
+    : `Nenhum nacional reproduz o ${esc(o.nome)} de perto. Este é o que mais se aproxima no estilo, para quem prefere uma marca brasileira.`;
   const eco = n.economia > 0
     ? `<p class="duelo__eco"><strong>${n.economia}<span class="pct">%</span></strong> mais barato por ml</p>`
     : `<p class="duelo__eco">Preço por ml parecido com o original</p>`;
@@ -547,12 +564,12 @@ function secaoNacional(par, ctx) {
 <section class="secao envoltorio" aria-labelledby="titulo-nacional">
   <div class="secao__cabeca">
     <h2 class="secao__titulo" id="titulo-nacional">Opção nacional</h2>
-    <p class="secao__texto">Prefere uma marca brasileira, fácil de achar em loja física e com troca simples? Este é o nacional que mais lembra o ${esc(o.nome)}.</p>
+    <p class="secao__texto">${intro}</p>
   </div>
   <article class="nacional">
     <div class="nacional__frasco">${frasco(n, "frasco--ficha", ctx)}</div>
     <div class="nacional__corpo">
-      <p class="papel papel--nacional">Opção nacional</p>
+      <p class="papel papel--nacional">${papelNacional(n)}</p>
       ${nomePerfume(n, "h3", "nome")}
       <p class="ficha__meta">${esc(CONCENTRACOES[n.conc] || n.conc)}${n.ano ? ` · ${n.ano}` : ""}</p>
       <p class="nacional__resumo">${esc(n.resumo)}</p>
@@ -679,7 +696,7 @@ export function paginaMetodo(pares, ctx) {
   <h2>Escolha dos pares</h2>
   <p>Partimos dos importados mais desejados no Brasil e buscamos, para cada um, a alternativa que a comunidade de perfumaria mais reconhece como parecida: avaliações de usuários, fóruns e comparações lado a lado. Quando há mais de uma boa opção, ela aparece em "Outras alternativas".</p>
   <h2>Opção nacional</h2>
-  <p>Cada comparação também traz um perfume de marca brasileira, como O Boticário, Natura ou Eudora, escolhido pelo DNA olfativo parecido com o do importado. Os nacionais não são cópias declaradas: costumam lembrar o original no estilo e em parte das notas, por isso a semelhança tende a ser menor que a da alternativa importada. Em troca, são fáceis de achar em loja física, têm troca simples e muitas vezes saem mais baratos.</p>
+  <p>Cada comparação também traz um perfume de marca brasileira, como O Boticário, Natura ou Eudora, escolhido pelo DNA olfativo parecido com o do importado. Os nacionais não são cópias declaradas: costumam lembrar o original no estilo e em parte das notas, por isso a semelhança tende a ser menor que a da alternativa importada. Em troca, são fáceis de achar em loja física, têm troca simples e muitas vezes saem mais baratos. Abaixo de 60% de semelhança, o nacional aparece como "no mesmo estilo": divide a família e parte das notas, mas tem personalidade própria. Quando nenhum nacional chega perto, a página diz isso em vez de forçar uma indicação.</p>
   <h2>Ranking</h2>
   <p>A ordem dos rankings é editorial. Ela pesa a fama do perfume original, a procura no Brasil e a qualidade da versão em conta.</p>
   <h2>Semelhança</h2>
