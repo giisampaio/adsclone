@@ -4,7 +4,7 @@ name: Fotos dos perfumes
 
 on:
   push:
-    branches: [claude/site-perfumes-dupes]
+    branches: [main, claude/site-perfumes-dupes]
     paths:
       - "site-perfumes/data/imagens.js"
       - ".github/workflows/fotos-perfumes.yml"
