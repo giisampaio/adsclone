@@ -6,6 +6,13 @@
 
   const normalizar = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+  // Foto que não carregou: mostra a ilustração do frasco no lugar.
+  for (const img of document.querySelectorAll(".foto img")) {
+    const falhou = () => img.parentNode.classList.add("foto--sem");
+    if (img.complete && img.naturalWidth === 0) falhou();
+    else img.addEventListener("error", falhou, { once: true });
+  }
+
   function iniciarCatalogo(raiz) {
     const busca = raiz.querySelector('input[type="search"]');
     const chips = [...raiz.querySelectorAll("[data-filtro]")];
