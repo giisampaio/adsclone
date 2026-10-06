@@ -877,7 +877,7 @@ export const masculino = [
       },
       busca: "Natura Homem Sagaz",
       semelhanca: 60,
-      resumo: "É o nacional mais citado como \"parecido com o Eros\": tem o mesmo caminho fresco no começo e doce de fava tonka e baunilha com cedro no fundo. A diferença é que no lugar da hortelã com maçã verde entra uma ameixa licorosa e especiada.",
+      resumo: "É o nacional mais citado como “parecido com o Eros”: tem o mesmo caminho fresco no começo e doce de fava tonka e baunilha com cedro no fundo. A diferença é que no lugar da hortelã com maçã verde entra uma ameixa licorosa e especiada.",
     },
     semelhanca: 86, grupo: "Fresco",
     acordes: [["Doce", 80], ["Aromático", 75], ["Menta", 70], ["Baunilha", 65], ["Frutado", 50]],
@@ -1355,7 +1355,7 @@ export const masculino = [
       cor: "#45285a", tampa: "prata", forma: "classico",
     },
     nacional: {
-      marca: "Eudora", nome: "Impression in Black", conc: "Deo Colônia", ano: 2018, familia: "Âmbar especiado",
+      marca: "Eudora", nome: "Impression in Black", conc: "EDP", ano: 2018, familia: "Âmbar especiado",
       ml: 100, preco: [170, 200], nota: 7.9, fixacao: [7, 9], projecao: 4,
       notas: {
         saida: ["Pimenta-preta", "Pimenta-da-jamaica", "Bergamota", "Artemísia", "Toranja"],

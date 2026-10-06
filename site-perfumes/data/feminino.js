@@ -109,7 +109,7 @@ export const feminino = [
       cor: "#eab5c5", tampa: "ouro", forma: "redondo",
     },
     nacional: {
-      marca: "Eudora", nome: "La Victorie", conc: "Deo Colônia", ano: 2018, familia: "Floral gourmand",
+      marca: "Eudora", nome: "La Victorie", conc: "EDP", ano: 2018, familia: "Floral gourmand",
       ml: 100, preco: [180, 220], nota: 7.8, fixacao: [6, 8], projecao: 3,
       notas: {
         saida: ["Bergamota", "Yuzu", "Neroli", "Lírio-do-vale"],
@@ -153,8 +153,8 @@ export const feminino = [
       busca: "Maison Alhambra Leonie",
     },
     nacional: {
-      marca: "Eudora", nome: "Instance Lavanda", conc: "Deo Colônia", ano: 2020, familia: "Aromático",
-      ml: 100, preco: [100, 135], nota: 7.2, fixacao: [3, 5], projecao: 2,
+      marca: "Eudora", nome: "Instance Lavanda", conc: "Body Splash", ano: 2020, familia: "Aromático",
+      ml: 200, preco: [60, 90], nota: 7.2, fixacao: [3, 5], projecao: 2,
       notas: {
         saida: ["Lavanda"],
         coracao: ["Notas florais"],
@@ -204,7 +204,7 @@ export const feminino = [
       },
       busca: "Eudora Eau de Parfum Feminino",
       semelhanca: 68,
-      resumo: "É o nacional mais citado como 'Coco Mademoiselle brasileiro': cítricos, rosa e um fundo de patchouli com baunilha no mesmo estilo chipre moderno. É mais frutado (damasco) e menos refinado no fundo, sem o vetiver e o almíscar branco do Chanel.",
+      resumo: "É o nacional mais citado como “Coco Mademoiselle brasileiro”: cítricos, rosa e um fundo de patchouli com baunilha no mesmo estilo chipre moderno. É mais frutado (damasco) e menos refinado no fundo, sem o vetiver e o almíscar branco do Chanel.",
     },
     semelhanca: 85, grupo: "Floral",
     acordes: [["Patchouli", 85], ["Floral", 80], ["Cítrico", 70], ["Rosa", 60], ["Almiscarado", 50]],
@@ -238,8 +238,8 @@ export const feminino = [
       busca: "Maison Alhambra Delilah Pour Femme",
     },
     nacional: {
-      marca: "Eudora", nome: "Instance Rosa Absoluta", conc: "EDP", ano: 2025, familia: "Floral",
-      ml: 100, preco: [150, 190], nota: 7.4, fixacao: [3, 5], projecao: 2,
+      marca: "Eudora", nome: "Instance Rosa Absoluta", conc: "Body Splash", ano: 2025, familia: "Floral",
+      ml: 200, preco: [60, 90], nota: 7.4, fixacao: [3, 5], projecao: 2,
       notas: {
         saida: ["Lichia", "Pomelo", "Pera", "Tangerina"],
         coracao: ["Rosa", "Peônia", "Lótus", "Lírio-do-vale"],
@@ -639,7 +639,7 @@ export const feminino = [
       cor: "#e5bf79", tampa: "ouro", forma: "classico",
     },
     nacional: {
-      marca: "Eudora", nome: "La Victorie Intense", conc: "Deo Colônia", ano: 2021, familia: "Floral amadeirado",
+      marca: "Eudora", nome: "La Victorie Intense", conc: "EDP", ano: 2021, familia: "Floral amadeirado",
       ml: 100, preco: [190, 230], nota: 8.0, fixacao: [7, 9], projecao: 4,
       notas: {
         saida: ["Pimenta-rosa", "Bergamota", "Tangerina", "Pera", "Toranja"],
@@ -768,8 +768,8 @@ export const feminino = [
       busca: "French Avenue Olena",
     },
     nacional: {
-      marca: "Eudora", nome: "Instance Macaron de Framboesa", conc: "Deo Colônia", ano: 2024, familia: "Floral frutado gourmand",
-      ml: 100, preco: [100, 135], nota: 7.4, fixacao: [4, 6], projecao: 3,
+      marca: "Eudora", nome: "Instance Macaron de Framboesa", conc: "Body Splash", ano: 2024, familia: "Floral frutado gourmand",
+      ml: 200, preco: [60, 90], nota: 7.4, fixacao: [4, 6], projecao: 3,
       notas: {
         saida: ["Framboesa", "Tangerina", "Bergamota", "Toranja", "Morango", "Damasco", "Laranja", "Limão"],
         coracao: ["Jasmim", "Rosa"],
@@ -777,7 +777,7 @@ export const feminino = [
       },
       busca: "Eudora Instance Macaron de Framboesa",
       semelhanca: 52,
-      resumo: "Abre com o mesmo trio cítrico (tangerina, bergamota, toranja) e framboesa do Oriana e seca em um fundo doce de amêndoa e baunilha. Não tem o marshmallow e o chantilly cremosos nem a flor de laranjeira, então fica mais 'doce de confeitaria' e menos sofisticado.",
+      resumo: "Abre com o mesmo trio cítrico (tangerina, bergamota, toranja) e framboesa do Oriana e seca em um fundo doce de amêndoa e baunilha. Não tem o marshmallow e o chantilly cremosos nem a flor de laranjeira, então fica mais “doce de confeitaria” e menos sofisticado.",
     },
     semelhanca: 90, grupo: "Gourmand",
     acordes: [["Doce", 85], ["Frutado", 75], ["Cremoso", 70], ["Cítrico", 60], ["Floral branco", 50]],
@@ -1056,7 +1056,7 @@ export const feminino = [
       cor: "#d8c79a", tampa: "ouro", forma: "quadrado",
     },
     nacional: {
-      marca: "Natura", nome: "Lavanda", conc: "Deo Colônia", ano: 2021, familia: "Floral aromático",
+      marca: "Natura", nome: "Águas Lavanda", conc: "Deo Colônia", ano: 2021, familia: "Floral aromático",
       ml: 150, preco: [90, 130], nota: 7.2, fixacao: [3, 5], projecao: 2,
       notas: {
         saida: ["Lavanda"],
@@ -1271,7 +1271,7 @@ export const feminino = [
       cor: "#2e2226", tampa: "preto", forma: "quadrado",
     },
     nacional: {
-      marca: "O Boticário", nome: "Elysée", conc: "Deo Colônia", ano: 2015, familia: "Âmbar floral",
+      marca: "O Boticário", nome: "Elysée", conc: "EDP", ano: 2015, familia: "Âmbar floral",
       ml: 50, preco: [180, 220], nota: 7.8, fixacao: [6, 8], projecao: 3,
       notas: {
         saida: ["Pimenta-rosa", "Tangerina", "Frésia", "Framboesa", "Sorbet", "Canela", "Maçã"],
@@ -1473,7 +1473,7 @@ export const feminino = [
       busca: "Lattafa Pride Thouq",
     },
     nacional: {
-      marca: "O Boticário", nome: "Rosas Secretas", conc: "Body Splash", ano: 2026, familia: "Âmbar floral",
+      marca: "O Boticário", nome: "Nativa SPA Rosas Secretas", conc: "Body Splash", ano: 2026, familia: "Âmbar floral",
       ml: 200, preco: [80, 110], nota: 7.5, fixacao: [3, 5], projecao: 2,
       notas: {
         saida: ["Lichia"],
