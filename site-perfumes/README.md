@@ -1,7 +1,7 @@
 # Essência Gêmea
 
-Guia de perfumes importados e suas versões em conta, lado a lado. Começa com o
-top 20 feminino e o top 20 masculino: cada página mostra o original e a
+Guia de perfumes importados e suas versões em conta, lado a lado. Traz o
+top 40 feminino e o top 40 masculino: cada página mostra o original e a
 alternativa com notas olfativas, fixação, projeção, nota da curadoria, economia
 por ml e botões de compra.
 
@@ -16,13 +16,13 @@ data/
   site.js        nome do site, domínio, tag de afiliado da Amazon e lojas
   links.js       seus links de afiliado por perfume (substituem os links de busca)
   imagens.js     de onde vem a foto de cada perfume
-  feminino.js    top 20 feminino
-  masculino.js   top 20 masculino (os campos estão explicados no topo do arquivo)
+  feminino.js    top 40 feminino
+  masculino.js   top 40 masculino (os campos estão explicados no topo do arquivo)
 src/
   lib.js         cálculos: economia por ml, notas em comum, links de compra
   render.js      templates HTML de todas as páginas
   styles.css     visual do site (paleta feminina, masculina e neutra)
-  app.js         busca, filtros e ordenação do top 20
+  app.js         busca, filtros e ordenação do ranking
 imagens/perfumes/  fotos baixadas com `npm run imagens`
 build.mjs        gera o site em dist/ (ou a prévia de arquivo único com --previa)
 ```
@@ -65,7 +65,7 @@ para links de afiliado.
 ## Adicionar ou editar perfumes
 
 Cada par fica em `data/feminino.js` ou `data/masculino.js`. A posição no array é
-a posição no ranking. Para adicionar o 21º, copie um bloco existente, ajuste os
+a posição no ranking. Para adicionar o 41º, copie um bloco existente, ajuste os
 campos e rode `npm run build`: a página nova, o card no ranking e o sitemap são
 gerados automaticamente.
 
@@ -87,10 +87,10 @@ opção disponível:
 2. **URL própria** em `data/imagens.js` → `fotos` (por exemplo, a imagem do
    produto fornecida pelo programa de afiliados da Amazon, Mercado Livre ou Shopee).
 3. **Foto do Fragrantica**, pelo número da página do perfume, já mapeado para os
-   80 perfumes em `data/imagens.js` → `fragrantica`.
+   160 perfumes em `data/imagens.js` → `fragrantica`.
 4. **Ilustração do frasco**, se a foto não carregar.
 
-Para baixar as 80 fotos para dentro do projeto (recomendado: o site fica mais
+Para baixar as 160 fotos para dentro do projeto (recomendado: o site fica mais
 rápido e não depende de outro servidor):
 
 ```bash

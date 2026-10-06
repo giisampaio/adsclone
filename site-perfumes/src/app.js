@@ -1,4 +1,4 @@
-// Interações do site: busca, filtro por família e ordenação no top 20.
+// Interações do site: busca, filtro por família e ordenação do ranking.
 // Na prévia de arquivo único, também faz a navegação entre páginas por #âncora.
 
 (() => {
