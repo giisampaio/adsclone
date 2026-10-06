@@ -11,6 +11,9 @@ export const GENEROS = {
   masculino: { id: "masculino", nome: "Masculino", plural: "masculinos" },
 };
 
+// Tamanho de cada ranking (top 20, top 40...), usado nos textos do site.
+export const TOTAIS = { feminino: feminino.length, masculino: masculino.length };
+
 export const CONCENTRACOES = {
   EDT: "Eau de Toilette",
   "EDT Intense": "Eau de Toilette Intense",

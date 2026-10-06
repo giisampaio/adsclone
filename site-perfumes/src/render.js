@@ -4,6 +4,7 @@
 import { site } from "../data/site.js";
 import {
   GENEROS,
+  TOTAIS,
   CONCENTRACOES,
   PROJECAO,
   normalizar,
@@ -224,8 +225,8 @@ export function rodape(ctx) {
       <p>${esc(site.slogan)}</p>
     </div>
     <nav class="rodape__nav" aria-label="Rodapé">
-      <a href="${ctx.genero("feminino")}">Top 20 feminino</a>
-      <a href="${ctx.genero("masculino")}">Top 20 masculino</a>
+      <a href="${ctx.genero("feminino")}">Top ${TOTAIS.feminino} feminino</a>
+      <a href="${ctx.genero("masculino")}">Top ${TOTAIS.masculino} masculino</a>
       <a href="${ctx.metodo()}">Como avaliamos</a>
     </nav>
     <div class="rodape__aviso">
@@ -252,7 +253,7 @@ function porta(genero, pares, ctx) {
   return `<a class="porta" data-genero="${genero}" href="${ctx.genero(genero)}">
     <div class="porta__frascos">${frasco(top.original, "frasco--porta", ctx)}<span class="porta__x" aria-hidden="true">×</span>${frasco(top.alt, "frasco--porta", ctx)}</div>
     <div class="porta__texto">
-      <p class="olho">Top 20</p>
+      <p class="olho">Top ${lista.length}</p>
       <h2 class="porta__titulo">${GENEROS[genero].nome}</h2>
       <p class="porta__exemplo">${esc(top.original.nome)} <span>×</span> ${esc(top.alt.nome)}</p>
       <p class="porta__eco">Economia de até ${maxEco}% por ml</p>
@@ -290,12 +291,12 @@ export function paginaInicio(pares, ctx) {
     <div class="destaques__col" data-genero="feminino">
       <h3 class="destaques__titulo">Feminino</h3>
       <div class="grade-cartoes grade-cartoes--coluna">${fem.map((p) => cartao(p, ctx, 4)).join("")}</div>
-      <a class="link-seta" href="${ctx.genero("feminino")}">Ver os 20 femininos <span aria-hidden="true">→</span></a>
+      <a class="link-seta" href="${ctx.genero("feminino")}">Ver os ${TOTAIS.feminino} femininos <span aria-hidden="true">→</span></a>
     </div>
     <div class="destaques__col" data-genero="masculino">
       <h3 class="destaques__titulo">Masculino</h3>
       <div class="grade-cartoes grade-cartoes--coluna">${mas.map((p) => cartao(p, ctx, 4)).join("")}</div>
-      <a class="link-seta" href="${ctx.genero("masculino")}">Ver os 20 masculinos <span aria-hidden="true">→</span></a>
+      <a class="link-seta" href="${ctx.genero("masculino")}">Ver os ${TOTAIS.masculino} masculinos <span aria-hidden="true">→</span></a>
     </div>
   </div>
 </section>
@@ -346,7 +347,7 @@ export function paginaInicio(pares, ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// Página de gênero (top 20 com filtros)
+// Página de gênero (ranking com filtros)
 // ---------------------------------------------------------------------------
 
 export function paginaGenero(genero, pares, ctx) {
@@ -361,9 +362,9 @@ export function paginaGenero(genero, pares, ctx) {
   const corpo = `
 <section class="cabeca envoltorio">
   <nav class="trilha" aria-label="Você está em"><a href="${ctx.inicio()}">Início</a><span aria-hidden="true">/</span><span>${info.nome}</span></nav>
-  <p class="olho">Top 20 · edição ${site.ano}</p>
+  <p class="olho">Top ${lista.length} · edição ${site.ano}</p>
   <h1 class="cabeca__titulo">Perfumes ${info.plural} importados e suas versões em conta</h1>
-  <p class="cabeca__texto">Os 20 ${info.plural} mais desejados, cada um ao lado da alternativa que mais se aproxima dele. A ordem é o ranking da curadoria: fama do original, procura no Brasil e qualidade da alternativa.</p>
+  <p class="cabeca__texto">Os ${lista.length} ${info.plural} mais desejados, cada um ao lado da alternativa que mais se aproxima dele. A ordem é o ranking da curadoria: fama do original, procura no Brasil e qualidade da alternativa.</p>
 </section>
 <section class="catalogo envoltorio" data-catalogo>
   <div class="filtros">
@@ -396,14 +397,14 @@ ${itens}
     rota: genero,
     genero,
     ativo: genero,
-    titulo: `Top 20 perfumes ${info.plural} importados e suas versões mais baratas | ${site.nome}`,
-    descricao: `Os 20 perfumes ${info.plural} importados mais desejados ao lado das alternativas mais parecidas: semelhança, notas olfativas, fixação, preço e onde comprar.`,
+    titulo: `Top ${lista.length} perfumes ${info.plural} importados e suas versões mais baratas | ${site.nome}`,
+    descricao: `Os ${lista.length} perfumes ${info.plural} importados mais desejados ao lado das alternativas mais parecidas: semelhança, notas olfativas, fixação, preço e onde comprar.`,
     caminho: `${genero}/`,
     corpo,
     jsonld: {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: `Top 20 perfumes ${info.plural} e suas versões em conta`,
+      name: `Top ${lista.length} perfumes ${info.plural} e suas versões em conta`,
       itemListElement: lista.map((p) => ({
         "@type": "ListItem",
         position: p.rank,
@@ -529,7 +530,7 @@ export function paginaPar(par, pares, ctx) {
   const corpo = `
 <section class="duelo envoltorio">
   <nav class="trilha" aria-label="Você está em"><a href="${ctx.inicio()}">Início</a><span aria-hidden="true">/</span><a href="${ctx.genero(par.genero)}">${info.nome}</a><span aria-hidden="true">/</span><span>${esc(o.nome)}</span></nav>
-  <p class="olho">Nº ${pad2(par.rank)} do top 20 ${info.nome.toLowerCase()}</p>
+  <p class="olho">Nº ${pad2(par.rank)} do top ${TOTAIS[par.genero]} ${info.nome.toLowerCase()}</p>
   <h1 class="duelo__titulo"><span>${esc(o.titulo)}</span> <span class="duelo__x" aria-label="comparado com">×</span> <span>${esc(a.titulo)}</span></h1>
   <p class="duelo__veredito">${esc(par.veredito)}</p>
   <div class="duelo__grade">
@@ -618,7 +619,7 @@ export function paginaMetodo(pares, ctx) {
   <h2>Escolha dos pares</h2>
   <p>Partimos dos importados mais desejados no Brasil e buscamos, para cada um, a alternativa que a comunidade de perfumaria mais reconhece como parecida: avaliações de usuários, fóruns e comparações lado a lado. Quando há mais de uma boa opção, ela aparece em "Outras alternativas".</p>
   <h2>Ranking</h2>
-  <p>A ordem do top 20 é editorial. Ela pesa a fama do perfume original, a procura no Brasil e a qualidade da versão em conta.</p>
+  <p>A ordem dos rankings é editorial. Ela pesa a fama do perfume original, a procura no Brasil e a qualidade da versão em conta.</p>
   <h2>Semelhança</h2>
   <p>Percentual de 0 a 100 que indica quanto do cheiro do original a alternativa reproduz depois de assentar na pele, considerando saída, evolução e fundo. Abaixo de 75%, tratamos a alternativa como inspiração: tem o mesmo estilo, mas personalidade própria.</p>
   <h2>Nota da curadoria</h2>
@@ -633,7 +634,7 @@ export function paginaMetodo(pares, ctx) {
   <p>Os botões levam a buscas ou a produtos em lojas como Amazon, Mercado Livre e Shopee. Alguns links podem ser de afiliado: se você comprar por eles, podemos receber uma comissão, sem custo extra para você. Isso não muda as avaliações.</p>
   <h2>Marcas e originalidade</h2>
   <p>Não temos vínculo com nenhuma das marcas citadas. As versões em conta são perfumes de marcas próprias, como Lattafa, Armaf, Maison Alhambra, Afnan, Al Haramain, Rasasi e French Avenue, e não são falsificações nem réplicas dos frascos originais.</p>
-  <p><a class="link-seta" href="${ctx.genero("feminino")}">Ver o top 20 feminino <span aria-hidden="true">→</span></a> <a class="link-seta" href="${ctx.genero("masculino")}">Ver o top 20 masculino <span aria-hidden="true">→</span></a></p>
+  <p><a class="link-seta" href="${ctx.genero("feminino")}">Ver o top ${TOTAIS.feminino} feminino <span aria-hidden="true">→</span></a> <a class="link-seta" href="${ctx.genero("masculino")}">Ver o top ${TOTAIS.masculino} masculino <span aria-hidden="true">→</span></a></p>
 </section>`;
   return {
     rota: "como-avaliamos",
@@ -659,7 +660,7 @@ export function pagina404(ctx) {
   <p class="olho">Erro 404</p>
   <h1 class="cabeca__titulo">Este frasco está vazio</h1>
   <p class="cabeca__texto">A página que você procura não existe ou mudou de endereço.</p>
-  <p><a class="link-seta" href="${ctx.genero("feminino")}">Top 20 feminino <span aria-hidden="true">→</span></a> <a class="link-seta" href="${ctx.genero("masculino")}">Top 20 masculino <span aria-hidden="true">→</span></a></p>
+  <p><a class="link-seta" href="${ctx.genero("feminino")}">Top ${TOTAIS.feminino} feminino <span aria-hidden="true">→</span></a> <a class="link-seta" href="${ctx.genero("masculino")}">Top ${TOTAIS.masculino} masculino <span aria-hidden="true">→</span></a></p>
 </section>`,
   };
 }
