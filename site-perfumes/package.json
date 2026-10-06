@@ -1,0 +1,16 @@
+{
+  "name": "essencia-gemea",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Guia de perfumes importados e suas versões em conta, lado a lado.",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "previa": "node build.mjs --previa",
+    "dev": "node build.mjs && node scripts/servidor.mjs",
+    "ids": "node scripts/ids.mjs"
+  }
+}
