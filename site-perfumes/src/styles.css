@@ -833,6 +833,13 @@ h4 {
   display: none;
 }
 
+/* Prévia: a foto vem de uma folha de estilo (classe fx-<id>) */
+.foto[class*="fx-"] {
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .foto--sem {
   background: transparent;
   box-shadow: none;

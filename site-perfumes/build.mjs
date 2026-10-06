@@ -133,6 +133,8 @@ async function gerarSite() {
 }
 
 async function gerarPrevia() {
+  await rm(path.join(raiz, "previa"), { recursive: true, force: true });
+  const folhas = await gerarFolhasDeFotos(path.join(raiz, "previa"));
   const ctx = R.criarContexto("previa", fotosLocais);
   const paginas = todasAsPaginas(ctx);
   const rotas = paginas
@@ -154,12 +156,33 @@ ${R.rodape(ctx)}
 <script>
 ${js}
 </script>
+${folhas.map((f) => `<link rel="stylesheet" href="${f}">`).join("\n")}
 `;
   const destino = path.join(raiz, "previa", "essencia-gemea.html");
-  await rm(path.join(raiz, "previa"), { recursive: true, force: true });
   await salvar(destino, html);
-  await copiarFotos(path.join(raiz, "previa", "img", "perfumes"));
-  console.log(`Prévia de arquivo único gerada em previa/essencia-gemea.html (${(html.length / 1024).toFixed(0)} KB).`);
+  console.log(`Prévia de arquivo único gerada em previa/essencia-gemea.html (${(html.length / 1024).toFixed(0)} KB) com ${folhas.length} folhas de fotos.`);
+}
+
+// Fotos da prévia embutidas em poucas folhas de estilo (até ~3 MB cada).
+async function gerarFolhasDeFotos(pasta) {
+  const tipos = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+  const folhas = [];
+  let atual = "";
+  const fechar = async () => {
+    if (!atual) return;
+    const nome = `fotos-${folhas.length + 1}.css`;
+    await salvar(path.join(pasta, nome), atual);
+    folhas.push(nome);
+    atual = "";
+  };
+  for (const [id, arquivo] of [...fotosLocais].sort()) {
+    const ext = arquivo.split(".").pop().toLowerCase();
+    const dados = (await readFile(path.join(pastaFotos, arquivo))).toString("base64");
+    atual += `.${R.classeFoto(id)}{background-image:url("data:${tipos[ext]};base64,${dados}")}\n`;
+    if (atual.length > 3_000_000) await fechar();
+  }
+  await fechar();
+  return folhas;
 }
 
 function avisarFotos(ctx) {

@@ -28,10 +28,16 @@ const pad2 = (n) => String(n).padStart(2, "0");
 // ---------------------------------------------------------------------------
 
 // fotosLocais: Map de id do perfume → nome do arquivo em imagens/perfumes/.
+// Na prévia, as fotos locais vêm de folhas de estilo (classe fx-<id>), porque o
+// visualizador aceita poucos arquivos por página.
+export const classeFoto = (id) => `fx-${id}`;
+
 export function criarContexto(modo, fotosLocais = new Map()) {
   const base = site.basePath;
-  const prefixoFotos = modo === "previa" ? "img/perfumes/" : `${base}img/perfumes/`;
-  const foto = (p) => (fotosLocais.has(p.id) ? prefixoFotos + fotosLocais.get(p.id) : fonteDaFoto(p));
+  const foto = (p) => {
+    if (!fotosLocais.has(p.id)) return fonteDaFoto(p);
+    return modo === "previa" ? `classe:${classeFoto(p.id)}` : `${base}img/perfumes/${fotosLocais.get(p.id)}`;
+  };
   if (modo === "previa") {
     return {
       modo,
@@ -118,6 +124,9 @@ function ilustracao(p, classe) {
 export function frasco(p, classe, ctx) {
   const src = ctx.foto(p);
   if (!src) return ilustracao(p, classe);
+  if (src.startsWith("classe:")) {
+    return `<span class="foto ${classe} ${src.slice(7)}" role="img" aria-label="Frasco do perfume ${esc(p.titulo)}">${ilustracao(p, "")}</span>`;
+  }
   return `<span class="foto ${classe}"><img src="${esc(src)}" alt="Frasco do perfume ${esc(p.titulo)}" width="375" height="500" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('foto--sem')">${ilustracao(p, "")}</span>`;
 }
 
