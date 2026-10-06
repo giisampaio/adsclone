@@ -18,6 +18,7 @@ export const CONCENTRACOES = {
   EDT: "Eau de Toilette",
   "EDT Intense": "Eau de Toilette Intense",
   EDP: "Eau de Parfum",
+  "EDP Intense": "Eau de Parfum Intense",
   Parfum: "Parfum",
   Elixir: "Elixir",
   Extrait: "Extrait de Parfum",
