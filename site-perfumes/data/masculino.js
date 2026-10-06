@@ -6,8 +6,8 @@
 //   nota (0 a 10, curadoria), fixacao [horas mín, máx], projecao (1 a 5),
 //   notas { saida, coracao, fundo }, cor (cor do frasco/líquido na ilustração),
 //   tampa ("ouro" | "prata" | "preto"), forma ("classico" | "quadrado" | "alto" | "redondo" | "facetado"),
-//   busca (opcional: texto usado nos links de busca das lojas),
-//   imagem (opcional: URL de foto do produto; substitui a ilustração).
+//   busca (opcional: texto usado nos links de busca das lojas).
+//   As fotos ficam em data/imagens.js e imagens/perfumes/.
 //
 // Campos do par:
 //   semelhanca (%), grupo (filtro), acordes [[nome, intensidade 0-100]],
@@ -76,18 +76,18 @@ export const masculino = [
   },
   {
     original: {
-      marca: "Dior", nome: "Sauvage", conc: "EDP", ano: 2018, familia: "Aromático fougère",
+      marca: "Dior", nome: "Sauvage", conc: "EDP", ano: 2018, familia: "Âmbar fougère",
       ml: 100, preco: [900, 1200], nota: 8.6, fixacao: [7, 9], projecao: 4,
       notas: {
         saida: ["Bergamota"],
-        coracao: ["Pimenta de Sichuan", "Lavanda", "Pimenta-rosa", "Vetiver", "Patchouli", "Gerânio", "Elemi"],
+        coracao: ["Pimenta de Sichuan", "Lavanda", "Anis-estrelado", "Noz-moscada"],
         fundo: ["Ambroxan", "Baunilha"],
       },
       cor: "#2c4f80", tampa: "preto", forma: "quadrado",
       busca: "Dior Sauvage Eau de Parfum",
     },
     alt: {
-      marca: "Maison Alhambra", nome: "Salvo", conc: "EDP", ano: 2022, familia: "Aromático fougère",
+      marca: "Maison Alhambra", nome: "Salvo", conc: "EDP", ano: 2022, familia: "Âmbar fougère",
       ml: 100, preco: [150, 250], nota: 8.0, fixacao: [6, 8], projecao: 4,
       notas: {
         saida: ["Bergamota"],
@@ -101,7 +101,7 @@ export const masculino = [
     clima: ["Calor", "Meia-estação", "Frio"], periodo: "Dia e noite", ocasioes: ["Dia a dia", "Trabalho", "Encontro"],
     veredito: "Reproduz a assinatura de bergamota com ambroxan que fez do Sauvage o masculino mais vendido do planeta, por uma fração do preço.",
     paraQuem: "Quem quer um perfume coringa, que agrada quase todo mundo, para usar em qualquer ocasião.",
-    diferencas: "O Salvo é um pouco mais áspero na saída e tem um anis discreto. O Dior é mais polido e dura mais na pele.",
+    diferencas: "O Salvo é um pouco mais áspero na saída e fixa menos. O Dior é mais polido, com o ambroxan mais limpo e duradouro.",
     dica: "Funciona bem no calor brasileiro: aplique pela manhã e reforce no fim da tarde se precisar.",
     outras: ["Maison Alhambra Salvo Intense"],
   },
@@ -117,7 +117,7 @@ export const masculino = [
       cor: "#1e2a45", tampa: "preto", forma: "quadrado",
     },
     alt: {
-      marca: "Armaf", nome: "Club de Nuit Iconic", conc: "EDP", ano: 2023, familia: "Amadeirado aromático",
+      marca: "Armaf", nome: "Club de Nuit Iconic", conc: "EDP", ano: 2022, familia: "Amadeirado aromático",
       ml: 105, preco: [300, 420], nota: 8.4, fixacao: [8, 10], projecao: 4,
       notas: {
         saida: ["Toranja", "Pimenta-rosa", "Limão", "Hortelã", "Coentro"],
@@ -172,8 +172,8 @@ export const masculino = [
       ml: 50, preco: [1900, 2600], nota: 9.2, fixacao: [8, 10], projecao: 4,
       notas: {
         saida: ["Conhaque"],
-        coracao: ["Canela", "Fava tonka", "Carvalho"],
-        fundo: ["Praliné", "Baunilha", "Sândalo"],
+        coracao: ["Canela", "Fava tonka", "Carvalho", "Hedione"],
+        fundo: ["Baunilha", "Praliné", "Sândalo", "Amêndoa caramelizada"],
       },
       cor: "#8c4b1e", tampa: "ouro", forma: "facetado",
     },
@@ -394,7 +394,7 @@ export const masculino = [
       busca: "Parfums de Marly Althair",
     },
     alt: {
-      marca: "French Avenue", nome: "Liquid Brun", conc: "EDP", ano: 2023, familia: "Âmbar baunilha",
+      marca: "French Avenue", nome: "Liquid Brun", conc: "EDP", ano: 2024, familia: "Âmbar baunilha",
       ml: 100, preco: [250, 380], nota: 8.6, fixacao: [8, 10], projecao: 4,
       notas: {
         saida: ["Canela", "Bergamota", "Cardamomo", "Flor de laranjeira"],

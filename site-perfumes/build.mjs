@@ -1,7 +1,7 @@
 // Gera o site estático em dist/ (padrão) ou a prévia de arquivo único em previa/ (--previa).
 // Não tem dependências: basta Node 18 ou mais recente.
 
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,25 @@ const raiz = path.dirname(fileURLToPath(import.meta.url));
 const modoPrevia = process.argv.includes("--previa");
 
 const pares = carregarPares();
+
+// Fotos baixadas em imagens/perfumes/<id>.jpg|png|webp
+const pastaFotos = path.join(raiz, "imagens", "perfumes");
+const fotosLocais = new Map();
+try {
+  for (const arquivo of await readdir(pastaFotos)) {
+    const m = arquivo.match(/^(.+)\.(jpe?g|png|webp)$/i);
+    if (m) fotosLocais.set(m[1], arquivo);
+  }
+} catch {
+  // Pasta ainda não existe: o site usa as fotos externas ou a ilustração.
+}
+
+async function copiarFotos(destino) {
+  for (const arquivo of fotosLocais.values()) {
+    await mkdir(destino, { recursive: true });
+    await copyFile(path.join(pastaFotos, arquivo), path.join(destino, arquivo));
+  }
+}
 const css = await readFile(path.join(raiz, "src/styles.css"), "utf8");
 const js = await readFile(path.join(raiz, "src/app.js"), "utf8");
 
@@ -58,7 +77,8 @@ ${eh404 ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href
 <meta property="og:title" content="${R.esc(pg.titulo)}">
 <meta property="og:description" content="${R.esc(pg.descricao)}">
 ${eh404 ? "" : `<meta property="og:url" content="${canonical}">`}
-<meta name="twitter:card" content="summary">
+${pg.imagem ? `<meta property="og:image" content="${R.esc(pg.imagem.startsWith("http") ? pg.imagem : site.url + pg.imagem)}">` : ""}
+<meta name="twitter:card" content="${pg.imagem ? "summary_large_image" : "summary"}">
 <link rel="icon" href="${base}favicon.svg" type="image/svg+xml">
 ${FONTES}
 <link rel="stylesheet" href="${assets.css}">
@@ -85,7 +105,7 @@ async function salvar(destino, conteudo) {
 async function gerarSite() {
   const saida = path.join(raiz, "dist");
   await rm(saida, { recursive: true, force: true });
-  const ctx = R.criarContexto("site");
+  const ctx = R.criarContexto("site", fotosLocais);
   const nomeCss = `styles.${hash(css)}.css`;
   const nomeJs = `app.${hash(js)}.js`;
   const assets = { css: `${site.basePath}assets/${nomeCss}`, js: `${site.basePath}assets/${nomeJs}` };
@@ -93,6 +113,7 @@ async function gerarSite() {
   await salvar(path.join(saida, "assets", nomeCss), css);
   await salvar(path.join(saida, "assets", nomeJs), js);
   await salvar(path.join(saida, "favicon.svg"), FAVICON);
+  await copiarFotos(path.join(saida, "img", "perfumes"));
 
   const paginas = todasAsPaginas(ctx);
   for (const pg of paginas) {
@@ -108,10 +129,11 @@ async function gerarSite() {
   await salvar(path.join(saida, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${site.url}${site.basePath}sitemap.xml\n`);
 
   console.log(`Site gerado em dist/ com ${paginas.length + 1} páginas (${pares.length} comparações).`);
+  avisarFotos(ctx);
 }
 
 async function gerarPrevia() {
-  const ctx = R.criarContexto("previa");
+  const ctx = R.criarContexto("previa", fotosLocais);
   const paginas = todasAsPaginas(ctx);
   const rotas = paginas
     .map(
@@ -134,8 +156,19 @@ ${js}
 </script>
 `;
   const destino = path.join(raiz, "previa", "essencia-gemea.html");
+  await rm(path.join(raiz, "previa"), { recursive: true, force: true });
   await salvar(destino, html);
+  await copiarFotos(path.join(raiz, "previa", "img", "perfumes"));
   console.log(`Prévia de arquivo único gerada em previa/essencia-gemea.html (${(html.length / 1024).toFixed(0)} KB).`);
+}
+
+function avisarFotos(ctx) {
+  const perfumes = pares.flatMap((p) => [p.original, p.alt]);
+  const semFoto = perfumes.filter((p) => !ctx.foto(p)).map((p) => p.id);
+  const externas = perfumes.filter((p) => !fotosLocais.has(p.id) && ctx.foto(p)).length;
+  console.log(`Fotos: ${fotosLocais.size} baixadas, ${externas} externas, ${semFoto.length} só com ilustração.`);
+  if (semFoto.length) console.log(`  Sem foto: ${semFoto.join(", ")}`);
+  if (externas) console.log("  Rode `npm run imagens` para baixar as fotos externas para imagens/perfumes/.");
 }
 
 if (modoPrevia) await gerarPrevia();

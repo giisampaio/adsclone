@@ -11,6 +11,7 @@
     "build": "node build.mjs",
     "previa": "node build.mjs --previa",
     "dev": "node build.mjs && node scripts/servidor.mjs",
-    "ids": "node scripts/ids.mjs"
+    "ids": "node scripts/ids.mjs",
+    "imagens": "node scripts/baixar-imagens.mjs"
   }
 }

@@ -10,6 +10,7 @@ import {
   notaPresente,
   linksDeCompra,
   linkDeBusca,
+  fonteDaFoto,
   fmtFaixa,
   fmtPorMl,
   fmtNota,
@@ -25,11 +26,15 @@ const pad2 = (n) => String(n).padStart(2, "0");
 // Contexto de links: site estático ou prévia de arquivo único
 // ---------------------------------------------------------------------------
 
-export function criarContexto(modo) {
+// fotosLocais: Map de id do perfume → nome do arquivo em imagens/perfumes/.
+export function criarContexto(modo, fotosLocais = new Map()) {
   const base = site.basePath;
+  const prefixoFotos = modo === "previa" ? "img/perfumes/" : `${base}img/perfumes/`;
+  const foto = (p) => (fotosLocais.has(p.id) ? prefixoFotos + fotosLocais.get(p.id) : fonteDaFoto(p));
   if (modo === "previa") {
     return {
       modo,
+      foto,
       inicio: () => "#inicio",
       genero: (g) => `#${g}`,
       par: (p) => `#${p.slug}`,
@@ -38,6 +43,7 @@ export function criarContexto(modo) {
   }
   return {
     modo,
+    foto,
     inicio: () => base,
     genero: (g) => `${base}${g}/`,
     par: (p) => `${base}${p.genero}/${p.slug}/`,
@@ -102,12 +108,16 @@ function formaDoFrasco(forma, cor, tampa, brilho) {
   }
 }
 
-export function frasco(p, classe = "") {
-  if (p.imagem) {
-    return `<img class="frasco frasco--foto ${classe}" src="${esc(p.imagem)}" alt="${esc(p.titulo)}" loading="lazy">`;
-  }
+function ilustracao(p, classe) {
   const [tampa, brilho] = TAMPAS[p.tampa] || TAMPAS.ouro;
   return `<svg class="frasco ${classe}" viewBox="0 0 120 200" aria-hidden="true" focusable="false">${formaDoFrasco(p.forma, p.cor, tampa, brilho)}</svg>`;
+}
+
+// Foto real do perfume, com a ilustração por baixo caso a foto não carregue.
+export function frasco(p, classe, ctx) {
+  const src = ctx.foto(p);
+  if (!src) return ilustracao(p, classe);
+  return `<span class="foto ${classe}"><img src="${esc(src)}" alt="Frasco do perfume ${esc(p.titulo)}" width="375" height="500" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('foto--sem')">${ilustracao(p, "")}</span>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -164,14 +174,14 @@ export function cartao(par, ctx, nivel = 2) {
     <div class="cartao__topo"><span class="cartao__rank">Nº ${pad2(par.rank)}</span><span class="cartao__grupo">${esc(par.grupo)}</span></div>
     <div class="cartao__duo">
       <div class="cartao__lado">
-        ${frasco(o, "frasco--cartao")}
+        ${frasco(o, "frasco--cartao", ctx)}
         <p class="papel papel--original">Original</p>
         ${nomePerfume(o)}
         <p class="cartao__preco">${fmtFaixa(o.preco)}<span>${o.ml} ml</span></p>
       </div>
       <div class="cartao__ponte">${anel(par.semelhanca)}</div>
       <div class="cartao__lado">
-        ${frasco(a, "frasco--cartao")}
+        ${frasco(a, "frasco--cartao", ctx)}
         <p class="papel papel--alt">Versão em conta</p>
         ${nomePerfume(a)}
         <p class="cartao__preco">${fmtFaixa(a.preco)}<span>${a.ml} ml</span></p>
@@ -240,7 +250,7 @@ function porta(genero, pares, ctx) {
   const top = lista[0];
   const maxEco = Math.max(...lista.map((p) => p.economia));
   return `<a class="porta" data-genero="${genero}" href="${ctx.genero(genero)}">
-    <div class="porta__frascos">${frasco(top.original, "frasco--porta")}<span class="porta__x" aria-hidden="true">×</span>${frasco(top.alt, "frasco--porta")}</div>
+    <div class="porta__frascos">${frasco(top.original, "frasco--porta", ctx)}<span class="porta__x" aria-hidden="true">×</span>${frasco(top.alt, "frasco--porta", ctx)}</div>
     <div class="porta__texto">
       <p class="olho">Top 20</p>
       <h2 class="porta__titulo">${GENEROS[genero].nome}</h2>
@@ -408,10 +418,10 @@ ${itens}
 // Página de comparação
 // ---------------------------------------------------------------------------
 
-function ficha(p, papel, outro) {
+function ficha(p, papel, ctx) {
   const ehOriginal = papel === "original";
   return `<article class="ficha ficha--${papel}">
-    <div class="ficha__frasco">${frasco(p, "frasco--ficha")}</div>
+    <div class="ficha__frasco">${frasco(p, "frasco--ficha", ctx)}</div>
     <p class="papel papel--${papel}">${ehOriginal ? "O original" : "Versão em conta"}</p>
     ${nomePerfume(p, "h2", "nome")}
     <p class="ficha__meta">${esc(CONCENTRACOES[p.conc] || p.conc)}${p.ano ? ` · ${p.ano}` : ""}</p>
@@ -523,13 +533,13 @@ export function paginaPar(par, pares, ctx) {
   <h1 class="duelo__titulo"><span>${esc(o.titulo)}</span> <span class="duelo__x" aria-label="comparado com">×</span> <span>${esc(a.titulo)}</span></h1>
   <p class="duelo__veredito">${esc(par.veredito)}</p>
   <div class="duelo__grade">
-    ${ficha(o, "original", a)}
+    ${ficha(o, "original", ctx)}
     <div class="duelo__meio">
       ${anel(par.semelhanca, "anel--grande")}
       <p class="duelo__eco"><strong>${par.economia}<span class="pct">%</span></strong> mais barato por ml</p>
       <p class="duelo__comuns">${par.notasEmComum} de ${par.notasTotal} notas do original aparecem na versão em conta</p>
     </div>
-    ${ficha(a, "alt", o)}
+    ${ficha(a, "alt", ctx)}
   </div>
 </section>
 <section class="secao envoltorio">
@@ -578,6 +588,7 @@ export function paginaPar(par, pares, ctx) {
     titulo: `Perfume parecido com ${o.titulo}: ${a.titulo} | ${site.nome}`,
     descricao: `${a.titulo} tem ${par.semelhanca}% de semelhança com o ${o.titulo} e custa cerca de ${par.economia}% menos por ml. Compare notas, fixação, projeção e onde comprar.`,
     caminho: `${par.genero}/${par.slug}/`,
+    imagem: ctx.foto(o),
     corpo,
     jsonld: {
       "@context": "https://schema.org",

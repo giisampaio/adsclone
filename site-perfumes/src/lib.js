@@ -2,6 +2,7 @@
 
 import { afiliados, lojas } from "../data/site.js";
 import { links } from "../data/links.js";
+import { fotos, fragrantica, urlFragrantica } from "../data/imagens.js";
 import { feminino } from "../data/feminino.js";
 import { masculino } from "../data/masculino.js";
 
@@ -110,6 +111,12 @@ export function linksDeCompra(perfume) {
     }
     return { id: loja.id, nome: loja.nome, url, afiliado: Boolean(proprio) };
   });
+}
+
+// URL externa da foto (sua URL em data/imagens.js ou a do Fragrantica). Vazio se não houver.
+export function fonteDaFoto(perfume) {
+  if (fotos[perfume.id]) return fotos[perfume.id];
+  return fragrantica[perfume.id] ? urlFragrantica(fragrantica[perfume.id]) : "";
 }
 
 export function linkDeBusca(texto, lojaId = "amazon") {

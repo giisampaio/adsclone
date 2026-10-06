@@ -15,6 +15,7 @@ Google ("perfume parecido com Creed Aventus").
 data/
   site.js        nome do site, domínio, tag de afiliado da Amazon e lojas
   links.js       seus links de afiliado por perfume (substituem os links de busca)
+  imagens.js     de onde vem a foto de cada perfume
   feminino.js    top 20 feminino
   masculino.js   top 20 masculino (os campos estão explicados no topo do arquivo)
 src/
@@ -22,6 +23,7 @@ src/
   render.js      templates HTML de todas as páginas
   styles.css     visual do site (paleta feminina, masculina e neutra)
   app.js         busca, filtros e ordenação do top 20
+imagens/perfumes/  fotos baixadas com `npm run imagens`
 build.mjs        gera o site em dist/ (ou a prévia de arquivo único com --previa)
 ```
 
@@ -75,7 +77,30 @@ Campos que mais importam:
   A economia é calculada pelo preço médio por ml.
 - `notas: { saida, coracao, fundo }`: as notas iguais nos dois perfumes ficam
   destacadas sozinhas.
-- `imagem` (opcional): URL de uma foto do produto, que substitui a ilustração do frasco.
+
+## Fotos dos perfumes
+
+Cada perfume tem uma foto real do frasco. Para cada um, o site usa a primeira
+opção disponível:
+
+1. **Arquivo próprio** em `imagens/perfumes/<id>.jpg` (ou `.png`/`.webp`).
+2. **URL própria** em `data/imagens.js` → `fotos` (por exemplo, a imagem do
+   produto fornecida pelo programa de afiliados da Amazon, Mercado Livre ou Shopee).
+3. **Foto do Fragrantica**, pelo número da página do perfume, já mapeado para os
+   80 perfumes em `data/imagens.js` → `fragrantica`.
+4. **Ilustração do frasco**, se a foto não carregar.
+
+Para baixar as 80 fotos para dentro do projeto (recomendado: o site fica mais
+rápido e não depende de outro servidor):
+
+```bash
+npm run imagens   # salva em imagens/perfumes/
+npm run build
+```
+
+Depois, faça commit da pasta `imagens/`. As fotos pertencem às marcas. Para uso
+comercial, o caminho mais seguro é trocar, aos poucos, pela imagem que o programa
+de afiliados fornece para cada produto (opção 2).
 
 ## Publicar
 
